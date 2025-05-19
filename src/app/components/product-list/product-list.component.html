@@ -1,0 +1,495 @@
+<div
+  [ngStyle]="{
+    'background-color': 'white',
+    'border-radius': '10px',
+    padding: '20px',
+    margin: '10px',
+    'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)',
+    width: '100%'
+  }"
+>
+  <p-text class="text-2xl font-bold text-center" [ngStyle]="{ color: 'black' }"
+    >Product List</p-text
+  >
+  <div class="card flex justify-center">
+    <p-breadcrumb class="max-w-full" [model]="items">
+      <ng-template #item let-item>
+        <ng-container *ngIf="item.route; else elseBlock">
+          <a [routerLink]="item.route" class="p-breadcrumb-item-link">
+            <span [ngClass]="[item.icon ? item.icon : '', 'text-color']"></span>
+            <span class="text-primary font-semibold">{{ item.label }}</span>
+          </a>
+        </ng-container>
+        <ng-template #elseBlock>
+          <a [href]="item.url">
+            <span class="text-color">{{ item.label }}</span>
+          </a>
+        </ng-template>
+      </ng-template>
+    </p-breadcrumb>
+  </div>
+</div>
+
+<div class="card">
+  <p-toast />
+  <p-toolbar styleClass="mb-4 gap-2">
+    <ng-template pTemplate="left">
+      <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="createProduct()"></button>
+    </ng-template>
+
+    <ng-template #end>
+      <p-fileUpload
+        mode="basic"
+        accept="image/*"
+        [maxFileSize]="1000000"
+        label="Import"
+        chooseLabel="Import"
+        auto
+        customUpload
+        class="mr-2 inline-block"
+        [chooseButtonProps]="{ severity: 'secondary' }"
+      />
+      <p-button
+        label="Export"
+        icon="pi pi-upload"
+        severity="secondary"
+        (onClick)="exportCSV()"
+      />
+      <!-- <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV($event)" /> -->
+    </ng-template>
+  </p-toolbar>
+
+  <p-table
+  #dt
+  [value]="products"
+  [rows]="10"
+  [columns]="cols"
+  [paginator]="true"
+  [globalFilterFields]="['name', 'category', 'subCategory', 'inventoryStatus']"
+  [tableStyle]="{ 'min-width': '60rem' }"
+  [(selection)]="selectedProducts"
+  [rowHover]="true"
+  dataKey="id"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+  [showCurrentPageReport]="true"
+  sortField="updatedAt"
+  [sortOrder]="-1"
+>
+  <ng-template #caption>
+    <div class="flex items-center justify-between">
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-search" />
+        <input
+          pInputText
+          type="text"
+          (input)="filterGlobal($event, 'contains')"
+          placeholder="Search..."
+        />
+      </p-iconfield>
+    </div>
+  </ng-template>
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="name" style="min-width: 10rem; max-width: 18rem;">
+        Name
+        <p-sortIcon field="name" />
+      </th>
+      <th>Image</th>
+      <th pSortableColumn="price" style="min-width: 8rem">
+        Price
+        <p-sortIcon field="price" />
+        <!-- <input
+          pInputText
+          type="text"
+          (input)="filterColumn($event, 'price', 'equals')"
+          placeholder="Filter by price"
+          class="p-inputtext-sm block mt-2"
+        /> -->
+      </th>
+      <th pSortableColumn="category" style="min-width: 10rem">
+        Category
+        <p-sortIcon field="category" />
+        <p-dropdown
+          [options]="categories"
+          (onChange)="onCategoryChange($event)"
+          placeholder="Filter by category"
+          styleClass="p-inputtext-sm block mt-2 w-full"
+          [showClear]="true"
+          [filter]="true"
+          filterBy="label"
+          [style]="{'min-width':'200px'}"
+          [styleClass]="'w-full'"
+          [panelStyleClass]="'w-full'"
+          [optionLabel]="'label'"
+          [optionValue]="'value'"
+          [scrollHeight]="'200px'"
+        />
+      </th>
+      <th pSortableColumn="subCategory" style="min-width: 10rem">
+        Sub Category
+        <p-sortIcon field="subCategory" />
+        <p-dropdown
+          [options]="subCategories"
+          (onChange)="onSubCategoryChange($event)"
+          placeholder="Filter by sub category"
+          styleClass="p-inputtext-sm block mt-2 w-full"
+          [showClear]="true"
+          [filter]="true"
+          filterBy="label"
+          [style]="{'min-width':'200px'}"
+          [styleClass]="'w-full'"
+          [panelStyleClass]="'w-full'"
+          [optionLabel]="'label'"
+          [optionValue]="'value'"
+          [scrollHeight]="'200px'"
+        />
+      </th>
+      <th pSortableColumn="rating" style="min-width: 12rem">
+        Reviews
+        <p-sortIcon field="rating" />
+      </th>
+      <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
+        Status <p-sortIcon field="inventoryStatus" />
+        <p-dropdown
+          [options]="statuses"
+          (onChange)="filterColumn($event.value, 'inventoryStatus', 'equals')"
+          placeholder="Filter by status"
+          styleClass="p-inputtext-sm block mt-2 w-full"
+          [showClear]="true"
+          [filter]="true"
+          filterBy="label"
+          [style]="{'min-width':'200px'}"
+          [styleClass]="'w-full'"
+          [panelStyleClass]="'w-full'"
+          [optionLabel]="'label'"
+          [optionValue]="'value'"
+          [scrollHeight]="'200px'"
+        />
+      </th>
+      <th style="min-width: 12rem">Actions</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-product>
+    <tr>
+      <td style="min-width: 10rem; max-width: 18rem;">
+        <span class="product-name-ellipsis">
+          <ng-container *ngIf="product.productType === 'variant' && product.variants?.length > 0; else simpleTitle">
+            {{ product.variants[0]?.title?.en || 'No title' }}
+          </ng-container>
+          <ng-template #simpleTitle>
+            {{ product.name }}
+          </ng-template>
+        </span>
+        <div *ngIf="product.productType === 'variant'" class="text-sm text-gray-500">
+          (Variant Product)
+        </div>
+      </td>
+      <td>
+        <ng-container *ngIf="product.productType === 'variant' && product.variants?.length > 0; else simpleImage">
+          <img
+            [src]="product.variants[0]?.mainImage"
+            [alt]="product.variants[0]?.mainImage"
+            style="width: 64px"
+            class="rounded"
+          />
+        </ng-container>
+        <ng-template #simpleImage>
+          <img
+            [src]="product.mainImage"
+            [alt]="product.mainImage"
+            style="width: 64px"
+            class="rounded"
+          />
+        </ng-template>
+      </td>
+      <td>
+        <ng-container *ngIf="product.productType === 'variant' && product.variants?.length > 0; else simplePrice">
+          <span *ngIf="product.variants[0]?.discountPrice; else noDiscountVar" style="text-decoration: line-through; color: gray">
+            {{ product.variants[0]?.price | currency : 'USD' }}
+          </span>
+          <ng-template #noDiscountVar>
+            {{ product.variants[0]?.price | currency : 'USD' }}
+          </ng-template>
+          <br />
+          <span *ngIf="product.variants[0]?.discountPrice" style="color: green; font-weight: bold">
+            {{ product.variants[0]?.discountPrice | currency : 'USD' }}
+          </span>
+          <button *ngIf="product.productType === 'variant' && product.variants?.length > 1"
+                  pButton
+                  label="Show More"
+                  class="p-button-text p-button-sm"
+                  (click)="showVariants(product)">
+          </button>
+        </ng-container>
+        <ng-template #simplePrice>
+          <span *ngIf="product.discountPrice; else noDiscountSimple" style="text-decoration: line-through; color: gray">
+            {{ product.price | currency : 'USD' }}
+          </span>
+          <ng-template #noDiscountSimple>
+            {{ product.price | currency : 'USD' }}
+          </ng-template>
+          <br />
+          <span *ngIf="product.discountPrice" style="color: green; font-weight: bold">
+            {{ product.discountPrice | currency : 'USD' }}
+          </span>
+        </ng-template>
+      </td>
+      <td>
+        <span style="font-weight: bold; color: #333">
+          <i class="pi pi-folder" style="margin-right: 4px; color: #007ad9"></i>
+          {{ product.category }}
+        </span>
+      </td>
+      <td>
+        <span style="font-size: 0.9rem; color: #666">
+          <i class="pi pi-tag" style="margin-right: 4px; color: #ff9800"></i>
+          {{ product.subCategory }}
+        </span>
+      </td>
+      <td>
+        <p-rating [(ngModel)]="product.rating" [readonly]="true" />
+      </td>
+      <td>
+        <p-tag
+          [value]="
+            getStatus(
+              product.productType === 'variant' && product.variants?.length > 0
+                ? product.variants[0]?.quantity
+                : product.quantity
+            )
+          "
+          [severity]="
+            getSeverity(
+              product.productType === 'variant' && product.variants?.length > 0
+                ? product.variants[0]?.quantity
+                : product.quantity
+            )
+          "
+        />
+      </td>
+      <td>
+        <p-button
+          icon="pi pi-pencil"
+          class="mr-2"
+          [rounded]="true"
+          [outlined]="true"
+          (click)="editProduct(product.id)"
+        />
+        <p-button
+          icon="pi pi-trash"
+          severity="danger"
+          [rounded]="true"
+          [outlined]="true"
+          (click)="deleteProduct(product.id)"
+        />
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template #summary>
+    <div class="flex items-center justify-between">
+      In total there are {{ products ? products.length : 0 }} products.
+    </div>
+  </ng-template>
+</p-table>
+
+  <p-dialog
+  [(visible)]="productDialog"
+  [style]="{ width: '450px' }"
+  header="Product Details"
+  [modal]="true"
+>
+  <ng-template #content>
+    <div class="flex flex-col gap-6">
+      <img
+        [src]="
+          'https://primefaces.org/cdn/primeng/images/demo/product/' +
+          product.mainImage
+        "
+        [alt]="product.mainImage"
+        class="block m-auto pb-4"
+        *ngIf="product.mainImage"
+      />
+      <div>
+        <label for="name" class="block font-bold mb-3">Name</label>
+        <input
+          type="text"
+          pInputText
+          id="name"
+          [(ngModel)]="product.title"
+          required
+          autofocus
+          fluid
+        />
+        <small class="text-red-500" *ngIf="submitted && !product.title"
+          >Name is required.</small
+        >
+      </div>
+      <div>
+        <label for="description" class="block font-bold mb-3"
+          >Description</label
+        >
+        <textarea
+          id="description"
+          pTextarea
+          [(ngModel)]="product.description"
+          required
+          rows="3"
+          cols="20"
+          fluid
+        ></textarea>
+      </div>
+
+      <div>
+        <label for="inventoryStatus" class="block font-bold mb-3"
+          >Inventory Status</label
+        >
+        <p-dropdown
+          [(ngModel)]="product.productType"
+          inputId="inventoryStatus"
+          [options]="statuses"
+          optionLabel="label"
+          placeholder="Select a Status"
+          styleClass="w-full"
+        />
+      </div>
+
+      <div>
+        <span class="block font-bold mb-4">Category</span>
+        <div class="grid grid-cols-12 gap-4">
+          <div class="flex items-center gap-2 col-span-6">
+            <p-radiobutton
+              id="category1"
+              name="category"
+              value="Accessories"
+              [(ngModel)]="product.categoryId"
+            />
+            <label for="category1">Accessories</label>
+          </div>
+          <div class="flex items-center gap-2 col-span-6">
+            <p-radiobutton
+              id="category2"
+              name="category"
+              value="Clothing"
+              [(ngModel)]="product.categoryId"
+            />
+            <label for="category2">Clothing</label>
+          </div>
+          <div class="flex items-center gap-2 col-span-6">
+            <p-radiobutton
+              id="category3"
+              name="category"
+              value="Electronics"
+              [(ngModel)]="product.categoryId"
+            />
+            <label for="category3">Electronics</label>
+          </div>
+          <div class="flex items-center gap-2 col-span-6">
+            <p-radiobutton
+              id="category4"
+              name="category"
+              value="Fitness"
+              [(ngModel)]="product.categoryId"
+            />
+            <label for="category4">Fitness</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-6">
+          <label for="price" class="block font-bold mb-3">Price</label>
+          <p-inputnumber
+            id="price"
+            [(ngModel)]="product.price"
+            mode="currency"
+            currency="USD"
+            locale="en-US"
+            fluid
+          />
+        </div>
+        <div class="col-span-6">
+          <label for="quantity" class="block font-bold mb-3">Quantity</label>
+          <p-inputnumber id="quantity" [(ngModel)]="product.quantity" fluid />
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #footer>
+      <!-- <p-button label="Cancel" icon="pi pi-times" text /> -->
+      <!-- <p-button label="Save" icon="pi pi-check"  /> -->
+    </ng-template>
+
+    <!-- <ng-template #footer>
+        <p-button label="Cancel" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button label="Save" icon="pi pi-check" (click)="saveProduct()" />
+    </ng-template> -->
+  </p-dialog>
+
+  <p-confirmDialog [style]="{ width: '450px' }" />
+
+  <!-- Variants Dialog -->
+  <p-dialog
+    [(visible)]="variantsDialog"
+    [style]="{ width: '600px' }"
+    [header]="selectedProduct?.name + ' - Variants'"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="grid">
+      <div *ngFor="let variant of selectedProduct?.variants" class="col-12">
+        <div class="p-3 border-1 surface-border border-round mb-3">
+          <div class="flex justify-content-between align-items-center">
+            <div>
+              <h4 class="m-0">{{ variant.title?.en }}</h4>
+              <p class="text-sm text-gray-500">{{ variant.title?.ar }}</p>
+            </div>
+            <div class="text-right">
+              <div class="text-xl font-bold">
+                {{ variant.price | currency : 'USD' }}
+                <span *ngIf="variant.discountPrice" class="text-green-600 ml-2">
+                  ({{ variant.discountPrice | currency : 'USD' }})
+                </span>
+              </div>
+              <div class="text-sm">Quantity: {{ variant.quantity }}</div>
+            </div>
+          </div>
+          <div *ngIf="variant.attributes?.length" class="mt-2">
+            <div *ngFor="let attr of variant.attributes" class="text-sm">
+              <span class="font-semibold">{{ attr.key }}:</span>
+              <span class="ml-2">{{ attr.value }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Close"
+        icon="pi pi-times"
+        (click)="hideVariantsDialog()"
+        class="p-button-text"
+      />
+    </ng-template>
+  </p-dialog>
+</div>
+
+<!-- <table border="1">
+  <thead>
+    <tr>
+      <td>name en</td>
+      <td>name ar</td>
+      <td>price</td>
+      <td>qty</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let product of products">
+      <td>{{ product.title.en }}</td>
+      <td>{{ product.title.ar }}</td>
+      <td>{{ product.price }}</td>
+      <td>{{ product.quantity }}</td>
+    </tr>
+  </tbody>
+</table> -->

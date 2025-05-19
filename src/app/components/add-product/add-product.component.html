@@ -1,0 +1,399 @@
+<form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+  <div class="grid">
+    <!-- Header -->
+    <p-toast></p-toast>
+    <div class="lg:col-12" [ngStyle]="{'background-color': 'white', 'border-radius': '10px', 'padding': '20px', 'margin': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)', 'width': '100%','display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between'}">
+      <div>
+        <p-text class="text-2xl font-bold text-center" [ngStyle]="{'color': 'black'}">
+          {{ isEditMode ? 'Edit Product' : 'Add New Product' }}
+        </p-text>
+        <div class="card flex justify-center">
+          <p-breadcrumb class="max-w-full" [model]="items">
+            <ng-template #item let-item>
+              <ng-container *ngIf="item.route; else elseBlock">
+                <a [routerLink]="item.route" class="p-breadcrumb-item-link">
+                  <span [ngClass]="[item.icon ? item.icon : '', 'text-color']"></span>
+                  <span class="text-primary font-semibold">{{ item.label }}</span>
+                </a>
+              </ng-container>
+              <ng-template #elseBlock>
+                <a [href]="item.url">
+                  <span class="text-color">{{ item.label }}</span>
+                </a>
+              </ng-template>
+            </ng-template>
+          </p-breadcrumb>
+        </div>
+      </div>
+      <p-button
+        [label]="isEditMode ? 'Update Product' : 'Add Product'"
+        severity="success"
+        type="submit"
+        [disabled]="productForm.invalid"
+        pRipple />
+    </div>
+
+    <div class="lg:col-8">
+      <!-- General Information -->
+      <div [ngStyle]="{'background-color': 'white', 'border-radius': '10px','padding':'20px','margin': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)'}">
+        <h2 style="padding: 20px; font-size:xx-large; font-weight: 600; color: firebrick;">General Information</h2>
+
+        <div>
+          <!-- Product Name -->
+          <h5 style="padding: 10px;">Product Name</h5>
+          <div class="grid card flex flex-wrap justify-between items-end gap-8">
+            <div style="flex: 1;" formGroupName="title">
+              <p-floatlabel variant="in">
+                <input pInputText id="pName-EN" formControlName="en" style="width: 100%;" />
+                <label for="pName-EN">Product Name (EN)</label>
+              </p-floatlabel>
+              <p *ngIf="productForm.get('title.en')?.touched && productForm.get('title.en')?.hasError('required')" class="text-red-500 text-sm">
+                English title is required.
+              </p>
+            </div>
+
+            <div style="flex: 1;" formGroupName="title">
+              <p-floatlabel variant="in">
+                <input pInputText id="pName-ar" formControlName="ar" style="width: 100%;" />
+                <label for="pName-ar">Product Name (AR)</label>
+              </p-floatlabel>
+              <p *ngIf="productForm.get('title.ar')?.touched && productForm.get('title.ar')?.hasError('required')" class="text-red-500 text-sm">
+                Arabic title is required.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Product Description -->
+          <div>
+            <h5 style="padding-top: 30px;">Product Description(EN)</h5>
+            <div formGroupName="description">
+              <p-editor formControlName="en" [style]="{ height: '200px' }" />
+            </div>
+          </div>
+
+          <div>
+            <h5 style="padding-top: 20px;">Product Description(AR)</h5>
+            <div formGroupName="description">
+              <p-editor formControlName="ar" [style]="{ height: '200px' }" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price & Quantity -->
+      <div [ngStyle]="{'background-color': 'white', 'border-radius': '10px', 'padding':'20px','margin': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)'}">
+        <h2 style="padding: 20px; font-size:xx-large; font-weight: 600; color: firebrick;">Price & Quantity</h2>
+        <p-fluid class="flex flex-wrap gap-4" style="padding-top: 10px;">
+          <div class="flex-auto">
+            <p-floatlabel variant="on" style="flex: 1;">
+              <p-inputnumber formControlName="price" inputId="on_label" mode="currency" currency="USD" locale="en-US" />
+              <label for="on_label">Base Price</label>
+
+            </p-floatlabel>
+            <p *ngIf="productForm.get('price')?.touched && productForm.get('price')?.hasError('required')" class="text-red-500 text-sm">
+              Price is required.
+            </p>
+
+          </div>
+        </p-fluid>
+
+        <p-fluid class="flex flex-wrap gap-4" style="padding-top: 10px;">
+          <div class="flex-auto">
+            <p-floatlabel variant="on">
+              <p-inputnumber formControlName="discountPrice" inputId="on_label" mode="currency" currency="USD" locale="en-US" />
+              <label for="on_label">After Discount Price</label>
+            </p-floatlabel>
+            <div *ngIf="productForm.hasError('discountInvalid') && productForm.get('discountPrice')?.touched" style="color: red; margin-top: 5px;">
+              Discount price must be less than base price.
+            </div>
+          </div>
+          <div class="flex-auto">
+            <p-floatlabel variant="on">
+              <p-inputnumber formControlName="quantity" inputId="on_label" />
+              <label for="on_label">Quantity</label>
+
+            </p-floatlabel>
+            <p *ngIf="productForm.get('quantity')?.touched && productForm.get('quantity')?.hasError('required')" class="text-red-500 text-sm">
+              Quantity is required.
+            </p>
+          </div>
+        </p-fluid>
+      </div>
+
+      <!-- Product Variants -->
+      <div [ngStyle]="{'background-color': 'white', 'border-radius': '10px', 'padding':'20px','margin': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)'}">
+        <h2 style="padding: 20px; font-size:xx-large; font-weight: 600; color: firebrick;">Product Variants</h2>
+
+        <div style="padding: 20px;">
+          <label style="padding: 10px;">Product Type</label>
+          <select style="padding: 5px;" formControlName="productType">
+            <option value="simple">Simple</option>
+            <option value="variant">Variant</option>
+          </select>
+        </div>
+
+        <div class="grid gap-4" style="padding: 20px;" *ngIf="productForm.get('productType')?.value === 'variant'">
+          <h4>Variants</h4>
+          <p-button label="Add Variant" [rounded]="true" severity="success" (click)="addVariant()" />
+
+          <div *ngIf="variants.controls.length > 0" formArrayName="variants">
+            <div *ngFor="let variant of variants.controls; let i = index; trackBy: trackByFn"
+                 [formGroupName]="i"
+                 [ngStyle]="{'background-color': 'rgb(218, 215, 215)', 'border-type': 'solid', 'border-radius': '10px', 'padding': '20px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)', 'margin-bottom': '20px'}">
+
+              <div style="display: flex; justify-content: space-between;">
+                <h4 style="text-align: center; color: rgb(36, 146, 36);">Variant {{ i + 1 }}</h4>
+                <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" (click)="removeVariant(i)" />
+              </div>
+
+              <!-- Variant Title -->
+              <div formGroupName="title" class="card flex flex-wrap justify-between items-end gap-2">
+                <div style="flex: 1;">
+                  <p-floatlabel variant="on">
+                    <input pInputText id="variant_title_en_{{i}}" formControlName="en" />
+                    <label for="variant_title_en_{{i}}">Product Name (EN)</label>
+                  </p-floatlabel>
+                </div>
+                <div style="flex: 1;">
+                  <p-floatlabel variant="on">
+                    <input pInputText id="variant_title_ar_{{i}}" formControlName="ar" />
+                    <label for="variant_title_ar_{{i}}">Product Name (AR)</label>
+                  </p-floatlabel>
+                </div>
+              </div>
+
+              <!-- Variant Price & Quantity -->
+              <div class="card flex flex-wrap justify-between items-end gap-2" style="padding: 10px;">
+                <div style="flex: 1;">
+                  <p-floatlabel variant="on">
+                    <p-inputnumber formControlName="price" inputId="variant_price_{{i}}" mode="currency" currency="USD" locale="en-US" />
+                    <label for="variant_price_{{i}}">Price</label>
+                  </p-floatlabel>
+                </div>
+                <div style="flex: 1;">
+                  <p-floatlabel variant="on">
+                    <p-inputnumber formControlName="discountPrice" inputId="variant_discount_price_{{i}}" mode="currency" currency="USD" locale="en-US" />
+                    <label for="variant_discount_price_{{i}}">Discount Price</label>
+                  </p-floatlabel>
+                </div>
+                <div style="flex: 1;">
+                  <p-floatlabel variant="on">
+                    <p-inputnumber formControlName="quantity" inputId="variant_quantity_{{i}}" />
+                    <label for="variant_quantity_{{i}}">Quantity</label>
+                  </p-floatlabel>
+                </div>
+              </div>
+
+              <!-- Variant Images -->
+              <div class="card flex flex-wrap justify-between items-end gap-2" style="padding: 10px;">
+                <div style="flex: 1;">
+                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="file_input">Main Image</label>
+                  <div class="relative">
+                    <!-- Preview of variant main image -->
+                    <div *ngIf="variant.get('mainImage')?.value" class="mb-2">
+                      <div class="w-[100px] h-[80px] overflow-hidden rounded-lg border border-gray-200">
+                        <img [src]="variant.get('mainImage')?.value"
+                             alt="Variant Main Image Preview"
+                             class="w-full h-full object-cover">
+                      </div>
+                    </div>
+                    <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                           aria-describedby="file_input_help"
+                           id="file_input"
+                           style="color: gray; border-radius: 20px; padding: 5px;"
+                           (change)="uploadImage($event, 'mainImage', i)"
+                           type="file">
+                  </div>
+                </div>
+
+                <div style="flex: 1;">
+                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="multiple_files">Multiple Images</label>
+                  <div class="relative">
+                    <!-- Preview of variant additional images -->
+                    <div *ngIf="variant.get('images')?.value?.length" class="grid grid-cols-4 gap-2 mb-2">
+                      <div *ngFor="let image of variant.get('images')?.value" class="relative group">
+                        <div class="w-[100px] h-[80px] overflow-hidden rounded-lg border border-gray-200">
+                          <img [src]="image"
+                               alt="Variant Image Preview"
+                               class="w-full h-full object-cover">
+                          <button type="button"
+                                  class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 text-xs"
+                                  (click)="removeVariantImage(i, image)">
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                           id="multiple_files"
+                           type="file"
+                           style="color: gray; border-radius: 20px; padding: 5px;"
+                           (change)="uploadImages($event, 'images', i)"
+                           multiple>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Variant Attributes -->
+              <!-- Variant Attributes -->
+<div style="padding: 10px;">
+  <h5 style="text-align: center; padding: 10px; color: rgb(36, 100, 146);">Attributes</h5>
+
+  <div *ngIf="getAttributes(i).errors?.['required'] && getAttributes(i).touched" class="text-red-500 text-sm mb-2">
+    At least one attribute is required
+  </div>
+
+  <div formArrayName="attributes" *ngIf="getAttributes(i).controls.length > 0" class="mb-4">
+    <h6 class="text-sm font-semibold mb-2">Saved Attributes:</h6>
+    <div class="grid grid-cols-2 gap-2">
+      <div *ngFor="let attr of getAttributes(i).controls; let attrIndex = index" [formGroupName]="attrIndex" class="bg-gray-50 p-2 rounded-lg border border-gray-200">
+        <div class="flex justify-between items-center">
+          <div class="flex gap-2">
+            <p-floatlabel variant="on">
+              <input pInputText id="attr_key_{{i}}_{{attrIndex}}" formControlName="key" pSize="small" />
+              <label for="attr_key_{{i}}_{{attrIndex}}">Attribute Key (e.g., color)</label>
+            </p-floatlabel>
+            <p-floatlabel variant="on">
+              <input pInputText id="attr_value_{{i}}_{{attrIndex}}" formControlName="value" pSize="small" />
+              <label for="attr_value_{{i}}_{{attrIndex}}">Attribute Value (e.g., red)</label>
+            </p-floatlabel>
+          </div>
+          <div class="flex gap-2">
+            <p-button icon="pi pi-trash" [text]="true" severity="danger" size="small" (click)="removeAttribute(i, attrIndex)" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card flex flex-wrap justify-center items-end" style="margin: 10px; border: 1px dashed rgb(9, 103, 105); padding: 4px; border-radius: 5px;">
+    <div class="flex gap-2">
+      <p-button icon="pi pi-plus" label="Add" [raised]="true" severity="info" (click)="addAttribute(i)" />
+    </div>
+  </div>
+</div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="lg:col-4">
+      <!-- Product Media -->
+      <div [ngStyle]="{'background-color': 'white', 'border-radius': '10px', 'padding':'20px', 'margin-top': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)'}">
+        <h2 style="padding: 20px; font-size:xx-large; font-weight: 600; color: firebrick;">Product Media</h2>
+        <div class="grid card flex flex-col flex-wrap justify-between items-center gap-3">
+          <!-- Main Image -->
+          <div style="width: 100%;">
+            <p style="font-weight: 300; font-size: larger; color: darkgreen;">Main Image</p>
+            <div class="flex items-center justify-center w-full">
+              <label for="mainImage"
+              [class.cursor-not-allowed]="productForm.get('productType')?.value === 'variant'"
+              [attr.title]="productForm.get('productType')?.value === 'variant' ? 'Uploading disabled for variant products' : ''"
+              (click)="preventUploadIfVariant($event)"
+              class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6" style="display: flex; flex-direction: column; flex-wrap: wrap; align-items: center; justify-content: center; padding: 20px; margin:auto; width: 100%;">
+                  <!-- Preview of main image -->
+                  <div *ngIf="productForm.get('mainImage')?.value" class="mb-4">
+                    <div class="w-[100px] h-[80px] overflow-hidden rounded-lg border border-gray-200">
+                      <img [src]="productForm.get('mainImage')?.value"
+                           alt="Main Image Preview"
+                           class="w-full h-full object-cover">
+                    </div>
+                  </div>
+                  <svg *ngIf="!productForm.get('mainImage')?.value" class="w-4 h-4 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                  </svg>
+                  <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                </div>
+                <input id="mainImage" type="file" (change)="uploadImage($event, 'mainImage')" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Other Images -->
+          <div style="width: 100%;">
+            <p style="font-weight: 300; font-size: larger; color: darkgreen;">Other Images</p>
+            <div class="flex items-center justify-center w-full">
+              <label for="Images"
+              [class.cursor-not-allowed]="productForm.get('productType')?.value === 'variant'"
+              [attr.title]="productForm.get('productType')?.value === 'variant' ? 'Uploading disabled for variant products' : ''"
+              (click)="preventUploadIfVariant($event)"
+              class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6" style="display: flex; flex-direction: column; flex-wrap: wrap; align-items: center; justify-content: center; padding: 20px; margin:auto; width: 100%;">
+                  <!-- Preview of other images -->
+                  <div *ngIf="productForm.get('images')?.value?.length" class="grid grid-cols-4 gap-2 mb-4 p-2">
+                    <div *ngFor="let image of productForm.get('images')?.value" class="relative group">
+                      <div class="!w-[100px] !h-[80px] !overflow-hidden rounded-lg border border-gray-200">
+                        <img [src]="image"
+                             alt="Image Preview"
+                             class="w-full h-full object-cover">
+                        <button type="button"
+                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 text-xs"
+                                (click)="removeImage(image)">
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <svg *ngIf="!productForm.get('images')?.value?.length" class="w-4 h-4 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                  </svg>
+                  <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                </div>
+                <input id="Images" type="file" multiple (change)="uploadImages($event, 'images')" class="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div [ngStyle]="{'background-color': 'white', 'border-radius': '10px', 'padding':'20px', 'margin-top': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)'}">
+        <h2 style="padding: 20px; font-size:xx-large; font-weight: 600; color: firebrick;">Product Category</h2>
+        <div class="card gap-2">
+          <div style="margin-top: 20px;">
+            <p-floatlabel variant="in">
+              <p-select formControlName="categoryId" inputId="catagory" [options]="catagory" optionLabel="name.en" value="categoryId" styleClass="w-full" variant="filled" />
+              <label for="in_label">Category</label>
+            </p-floatlabel>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <p-floatlabel variant="in">
+              <p-select formControlName="subCategoryId" inputId="subCategory" [options]="subcategory" optionLabel="name.en" value="subCategoryId" styleClass="w-full" variant="filled" />
+              <label for="in_label">SubCategory</label>
+            </p-floatlabel>
+          </div>
+
+          <!-- Brand -->
+          <div style="margin-top: 20px;">
+            <p-floatlabel variant="in">
+              <p-select formControlName="brandId" inputId="brand" [options]="brands" optionLabel="name.en" value="brandId" styleClass="w-full" variant="filled" />
+              <label for="in_label">Brand</label>
+            </p-floatlabel>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div [ngStyle]="{'background-color': 'white', 'border-radius': '10px', 'padding':'20px', 'margin-top': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)'}">
+        <h2 style="padding: 20px; font-size:xx-large; font-weight: 600; color: firebrick;">Product Tags</h2>
+        <div class="card flex flex-wrap justify-between items-end gap-2">
+          <div class="flex-auto">
+            <p-floatlabel variant="in">
+              <input pInputText id="tags" formControlName="tags" style="width: 100%;" />
+              <label for="tags">Tags (e.g., tag1,tag2)</label>
+            </p-floatlabel>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

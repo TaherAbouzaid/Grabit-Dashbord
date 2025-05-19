@@ -1,0 +1,66 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+<div class="card">
+  <p-table
+    [value]="(orders$ | async) ?? []"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
+    styleClass="p-datatable-gridlines"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Order ID</th>
+        <th>Customer</th>
+        <th>Total Amount</th>
+        <th>Payment Method</th>
+        <th>Status</th>
+        <th>Order Date</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-order>
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.customerName }}</td>
+        <td>{{ order.totalAmount | currency : "EGP" }}</td>
+        <td>{{ order.paymentMethod }}</td>
+        <td>
+          <p-dropdown
+            [options]="statusOptions"
+            [(ngModel)]="order.status"
+            (onChange)="updateOrderStatus(order, $event.value)"
+            [disabled]="loading"
+            styleClass="w-full"
+            optionLabel="label"
+            optionValue="value"
+            [scrollHeight]="'150px'"
+            appendTo="body"
+          ></p-dropdown>
+        </td>
+        <td>{{ order.createdAt | date : "medium" }}</td>
+        <td>
+          <button
+            pButton
+            icon="pi pi-eye"
+            class="p-button-rounded p-button-info mr-2"
+            [routerLink]="['/dashboard/orders', order.id]"
+          ></button>
+          <button
+            pButton
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-danger"
+            (click)="deleteOrder(order.id)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center">No orders found</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

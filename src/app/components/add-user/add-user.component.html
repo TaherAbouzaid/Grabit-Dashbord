@@ -1,0 +1,44 @@
+<p-toast></p-toast>
+
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="p-fluid p-formgrid p-grid"
+      style="max-width: 900px; margin: auto; padding: 2rem; background: #fff; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+
+  <div class="p-field p-col-12 p-md-6 field-spacing">
+    <label for="fullName" class="field-label">Full Name</label>
+    <input id="fullName" pInputText formControlName="fullName" type="text" placeholder="Enter full name" class="full-width-input" />
+  </div>
+
+  <div class="p-field p-col-12 p-md-6 field-spacing">
+    <label for="email" class="field-label">Email</label>
+    <input id="email" pInputText formControlName="email" type="email" placeholder="Enter email" class="full-width-input" />
+  </div>
+
+  <div class="p-field p-col-12 p-md-6 field-spacing">
+    <label for="password" class="field-label">Password</label>
+    <p-password inputId="password" formControlName="password" [feedback]="false" placeholder="Enter password" class="full-width-input"></p-password>
+  </div>
+
+  <div class="p-field p-col-12 p-md-6 field-spacing">
+    <label for="role" class="field-label">Role</label>
+    <p-dropdown
+      id="role"
+      formControlName="role"
+      [options]="roles"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Select Role"
+      class="full-width-input"
+    ></p-dropdown>
+  </div>
+
+  <div class="p-col-12" style="text-align: center; margin-top: 2rem;">
+    <button
+      pButton
+      type="submit"
+      label="Add User"
+      [disabled]="userForm.invalid"
+      class="p-button-rounded p-button-lg p-button-primary"
+    ></button>
+  </div>
+
+</form>

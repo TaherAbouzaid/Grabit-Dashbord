@@ -1,0 +1,75 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="card">
+  <!-- Header with Search and Filters -->
+  <div class="flex flex-column gap-4 mb-4">
+    <div class="flex justify-content-between align-items-center">
+      <h2 class="text-2xl font-bold m-0">Posts</h2>
+      <div class="flex gap-3">
+        <div class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input pInputText type="text" placeholder="Search posts..." (input)="filterPosts($event)" class="p-inputtext-lg" />
+        </div>
+        <p-dropdown [options]="sortOptions" [(ngModel)]="selectedSort" placeholder="Sort by" (onChange)="sortPosts()" [style]="{'width':'200px'}"></p-dropdown>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <p-button label="All" [outlined]="selectedFilter !== 'all'" (click)="filterByStatus('all')" class="p-button-sm"></p-button>
+      <p-button label="Most Viewed" [outlined]="selectedFilter !== 'views'" (click)="filterByStatus('views')" class="p-button-sm"></p-button>
+      <p-button label="Most Liked" [outlined]="selectedFilter !== 'likes'" (click)="filterByStatus('likes')" class="p-button-sm"></p-button>
+      <p-button label="Most Commented" [outlined]="selectedFilter !== 'comments'" (click)="filterByStatus('comments')" class="p-button-sm"></p-button>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="p-6 text-center text-gray-500">
+    <p>Loading posts...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="p-6 text-center text-red-500">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Post Grid -->
+  <div *ngIf="!isLoading && !errorMessage" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 bg-gray-100">
+    <p-card *ngFor="let item of filteredPosts; let i = index"
+      [style]="{ width: '25rem', overflow: 'hidden' }"
+      class="mx-auto mb-6">
+      <ng-template pTemplate="header">
+        <img alt="Post Image" class="w-full h-48 object-cover" [src]="item.post.image || 'https://images.pexels.com/photos/31067936/pexels-photo-31067936/free-photo-of-minimalist-architectural-white-wall-with-blue-sky.jpeg'" />
+      </ng-template>
+      <ng-template pTemplate="title">
+        <span class="truncate block" title="{{ item.post.title }}">{{ item.post.title }}</span>
+      </ng-template>
+      <ng-template pTemplate="subtitle">
+        <p class="text-xs text-gray-500">By {{ getAuthorName(item.post.authorId) }}</p>
+        <p *ngIf="item.post.createdAt" class="text-xs text-gray-400">Created: {{ item.post.createdAt.toDate() | date:'medium' }}</p>
+        <p *ngIf="item.post.updatedAt" class="text-xs text-gray-400">Updated: {{ item.post.updatedAt.toDate() | date:'medium' }}</p>
+      </ng-template>
+      <p class="text-sm text-gray-700 mb-3 truncate" title="{{ item.post.content }}">
+        {{ item.post.content | slice:0:100 }}<span *ngIf="item.post.content.length > 100">...</span>
+      </p>
+      <ng-template pTemplate="footer">
+        <div class="flex items-center text-xs text-gray-500 mb-2 gap-4">
+          <span title="Views">👁️ {{ item.post.views }}</span>
+          <span title="Likes">❤️ {{ item.post.likesCount }}</span>
+          <span title="Comments">💬 {{ item.comments.length }}</span>
+        </div>
+        <div class="flex gap-2 mt-1">
+          <button pButton label="View" class="p-button-sm p-button-success" (click)="viewPost(item.post)"></button>
+          <button pButton icon="pi pi-pencil" class="p-button-sm" (click)="toggleEdit(i)"></button>
+          <button pButton icon="pi pi-trash" class="p-button-sm p-button-danger" (click)="deletePost(item.post.postId)"></button>
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+
+  <!-- Add Post Button -->
+  <div class="p-6">
+    <button pButton label="Add Post" icon="pi pi-plus" (click)="addPost()"></button>
+  </div>
+</div>
+
+<router-outlet></router-outlet>

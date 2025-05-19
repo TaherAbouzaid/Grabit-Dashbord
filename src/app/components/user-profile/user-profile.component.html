@@ -1,0 +1,175 @@
+<div class="profile-container">
+  <p-toast></p-toast>
+
+  <!-- User Profile Section -->
+  <div class="card">
+    <h2>User Profile</h2>
+    <form [formGroup]="userForm" (ngSubmit)="onUserSubmit()">
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input id="fullName" type="text" pInputText formControlName="fullName" class="w-full">
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText formControlName="email" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone</label>
+        <input id="phone" type="tel" pInputText formControlName="phone" class="w-full">
+      </div>
+
+      <div class="form-group">
+        <label>Profile Image</label>
+        <div class="image-upload-container">
+          <div class="current-image" *ngIf="profileImageUrl || tempProfileImageUrl">
+            <img [src]="tempProfileImageUrl || profileImageUrl" alt="Profile Image" class="profile-image">
+          </div>
+          <div class="upload-controls">
+            <input
+              type="file"
+              accept="image/*"
+              (change)="onImageSelected($event, 'user')"
+              [disabled]="isUploading"
+              class="file-input">
+            <small *ngIf="isUploading" class="uploading-text">Uploading...</small>
+          </div>
+        </div>
+      </div>
+
+      <div formGroupName="address" class="address-group">
+        <h3>Address</h3>
+        <div class="form-group">
+          <label for="street">Street</label>
+          <input id="street" type="text" pInputText formControlName="street" class="w-full">
+        </div>
+
+        <div class="form-group">
+          <label for="city">City</label>
+          <input id="city" type="text" pInputText formControlName="city" class="w-full">
+        </div>
+
+        <div class="form-group">
+          <label for="country">Country</label>
+          <input id="country" type="text" pInputText formControlName="country" class="w-full">
+        </div>
+
+        <div class="form-group">
+          <label for="postalCode">Postal Code</label>
+          <input id="postalCode" type="text" pInputText formControlName="postalCode" class="w-full">
+        </div>
+      </div>
+
+      <button pButton type="submit" label="Update Profile" [disabled]="userForm.invalid"></button>
+    </form>
+
+    <!-- Password Change Section -->
+    <div class="password-section">
+      <h3>Change Password</h3>
+      <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input id="currentPassword" type="password" pInputText formControlName="currentPassword" class="w-full">
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input id="newPassword" type="password" pInputText formControlName="newPassword" class="w-full">
+          <small class="text-gray-500">Password must be at least 6 characters long</small>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <input id="confirmPassword" type="password" pInputText formControlName="confirmPassword" class="w-full">
+          <small *ngIf="passwordForm.hasError('mismatch')" class="text-red-500">
+            Passwords do not match
+          </small>
+        </div>
+
+        <button pButton type="submit" label="Change Password" [disabled]="passwordForm.invalid"></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Vendor Profile Section -->
+  <div class="card" *ngIf="isVendor">
+    <h2>Vendor Profile</h2>
+    <form [formGroup]="vendorForm" (ngSubmit)="onVendorSubmit()">
+      <div formGroupName="storeName">
+        <div class="form-group">
+          <label for="storeNameEn">Store Name (English)</label>
+          <input id="storeNameEn" type="text" pInputText formControlName="en" class="w-full">
+        </div>
+
+        <div class="form-group">
+          <label for="storeNameAr">Store Name (Arabic)</label>
+          <input id="storeNameAr" type="text" pInputText formControlName="ar" class="w-full">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="ownerName">Owner Name</label>
+        <input id="ownerName" type="text" pInputText formControlName="ownerName" class="w-full">
+      </div>
+
+      <div class="form-group">
+        <label for="vendorPhone">Phone</label>
+        <input id="vendorPhone" type="tel" pInputText formControlName="phone" class="w-full">
+      </div>
+
+      <div class="form-group">
+        <label for="vendorEmail">Email</label>
+        <input id="vendorEmail" type="email" pInputText formControlName="email" class="w-full">
+      </div>
+
+      <div class="form-group">
+        <label>Store Logo</label>
+        <div class="image-upload-container">
+          <div class="current-image" *ngIf="vendorLogoUrl || tempLogoUrl">
+            <img [src]="tempLogoUrl || vendorLogoUrl" alt="Store Logo" class="profile-image">
+          </div>
+          <div class="upload-controls">
+            <input
+              type="file"
+              accept="image/*"
+              (change)="onImageSelected($event, 'vendor')"
+              [disabled]="isUploading"
+              class="file-input">
+            <small *ngIf="isUploading" class="uploading-text">Uploading...</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="aboutUs">About Us</label>
+        <textarea id="aboutUs" pInputTextarea formControlName="aboutUs" rows="5" class="w-full"></textarea>
+      </div>
+
+      <div formGroupName="address" class="address-group">
+        <h3>Store Address</h3>
+        <div class="form-group">
+          <label for="vendorStreet">Street</label>
+          <input id="vendorStreet" type="text" pInputText formControlName="street" class="w-full">
+        </div>
+
+        <div class="form-group">
+          <label for="vendorCity">City</label>
+          <input id="vendorCity" type="text" pInputText formControlName="city" class="w-full">
+        </div>
+
+        <div class="form-group">
+          <label for="vendorCountry">Country</label>
+          <input id="vendorCountry" type="text" pInputText formControlName="country" class="w-full">
+        </div>
+
+        <div class="form-group">
+          <label for="vendorPostalCode">Postal Code</label>
+          <input id="vendorPostalCode" type="text" pInputText formControlName="postalCode" class="w-full">
+        </div>
+      </div>
+
+      <button pButton type="submit" label="Update Vendor Profile" [disabled]="vendorForm.invalid"></button>
+    </form>
+  </div>
+</div>

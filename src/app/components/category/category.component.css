@@ -1,0 +1,121 @@
+.card {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 1rem;
+}
+
+.p-toolbar {
+  margin-bottom: 1.5rem !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.mr-8 {
+  margin-right: 0.5rem !important;
+}
+
+.p-datatable {
+  margin-top: 1rem;
+}
+
+.p-datatable .p-datatable-header {
+  background: #f8f9fa !important;
+  border: none !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background: #f8f9fa !important;
+  color: #5caf90 !important;
+  font-weight: 600 !important;
+  padding: 1rem !important;
+  border: none !important;
+  border-bottom: 2px solid #e9ecef !important;
+}
+
+.p-datatable .p-datatable-tbody > tr {
+  transition: background-color 0.2s;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background-color: rgba(92, 175, 144, 0.1) !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 1rem !important;
+  border: none !important;
+  border-bottom: 1px solid #e9ecef !important;
+}
+
+.p-datatable .p-button-rounded {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  margin: 0 0.25rem !important;
+}
+
+.p-dialog {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.p-dialog .p-dialog-header {
+  background: #f8f9fa !important;
+  border-bottom: 1px solid #e9ecef !important;
+  padding: 1.25rem !important;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+}
+
+.p-dialog .p-dialog-content {
+  padding: 2rem !important;
+}
+
+.p-dialog .p-field {
+  margin-bottom: 1.5rem !important;
+}
+
+.p-dialog .p-field label {
+  display: block !important;
+  margin-bottom: 0.5rem !important;
+  color: #666 !important;
+  font-weight: 500 !important;
+  font-size: 0.95rem !important;
+}
+
+.p-dialog .p-field input,
+.p-dialog .p-field select {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 6px !important;
+  transition: all 0.2s !important;
+  font-size: 1rem !important;
+}
+
+.p-dialog .p-field input:focus,
+.p-dialog .p-field select:focus {
+  border-color: #5caf90 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(92, 175, 144, 0.1) !important;
+}
+
+.p-dialog .p-dialog-footer {
+  border-top: 1px solid #e9ecef !important;
+  padding: 1.25rem !important;
+  text-align: right !important;
+  background: #f8f9fa !important;
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+}
+
+.p-dialog .p-button {
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.95rem !important;
+  border-radius: 6px !important;
+}
+
+.my-4 {
+  margin: 1rem 0 !important;
+}

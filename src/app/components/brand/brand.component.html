@@ -1,0 +1,119 @@
+<div  class="lg:col-12" [ngStyle]="{'background-color': 'white', 'border-radius': '10px', 'padding': '20px', 'margin': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)', 'width': '100%','display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between'}">
+  <div>
+    <p-text class="text-2xl font-bold text-center" [ngStyle]="{'color': 'black'}">All Brands</p-text>
+    <div class="card flex justify-center">
+      <p-breadcrumb class="max-w-full" [model]="items">
+          <ng-template #item let-item>
+              <ng-container *ngIf="item.route; else elseBlock">
+                  <a [routerLink]="item.route" class="p-breadcrumb-item-link">
+                      <span [ngClass]="[item.icon ? item.icon : '', 'text-color']"></span>
+                      <span class="text-primary font-semibold">{{ item.label }}</span>
+                  </a>
+              </ng-container>
+              <ng-template #elseBlock>
+                  <a [href]="item.url">
+                      <span class="text-color">{{ item.label }}</span>
+                  </a>
+              </ng-template>
+          </ng-template>
+      </p-breadcrumb>
+  </div>
+
+  </div>
+
+
+</div>
+
+
+<div class="card">
+  <p-toast />
+  <p-toolbar styleClass="mb-6">
+      <ng-template #start>
+        <p-button label="Add New Brand" icon="pi pi-plus" (click)="openNew()" class="mb-3"></p-button>
+      </ng-template>
+
+
+  </p-toolbar>
+
+  <p-table
+      #dt
+      [value]="brands"
+
+      [rows]="10"
+      [paginator]="true"
+      [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
+      [tableStyle]="{ 'min-width': '75rem' }"
+      [rowHover]="true"
+      dataKey="id"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+  >
+      <ng-template #caption>
+          <div class="flex items-center justify-between">
+              <h5 class="m-0">Manage brand</h5>
+              <p-iconfield>
+                  <p-inputicon styleClass="pi pi-search" />
+                  <!-- <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." /> -->
+              </p-iconfield>
+          </div>
+      </ng-template>
+      <ng-template #header>
+          <tr>
+              <th style="width: 3rem">
+                  <p-tableHeaderCheckbox />
+              </th>
+              <th style="min-width: 16rem">Brand ID</th>
+              <th pSortableColumn="name" style="min-width:16rem">
+                  Name(EN)
+                  <p-sortIcon field="nameEn" />
+              </th>
+              <th pSortableColumn="nameAr" style="min-width: 8rem">
+                  Name(AR)
+                  <p-sortIcon field="price" />
+              </th>
+
+              <th style="min-width: 12rem"> Actions</th>
+          </tr>
+      </ng-template>
+      <ng-template #body let-brand>
+          <tr>
+              <td style="width: 3rem">
+                  <p-tableCheckbox [value]="brands" />
+              </td>
+              <td style="min-width: 12rem">{{ brand.brandId }}</td>
+              <td style="min-width: 16rem">{{ brand.name.en }}</td>
+              <td style="min-width: 16rem">{{ brand.name.ar}}</td>
+              <td>
+                <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text" (click)="editBrand(brand)"></button>
+                <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteBrand(brand.brandId)"></button>
+              </td>
+          </tr>
+      </ng-template>
+      <ng-template #summary>
+          <div class="flex items-center justify-between">In total there are {{ brandForm ? brands.length : 0 }} brand.</div>
+      </ng-template>
+  </p-table>
+
+  <p-dialog header="Brand Form" [(visible)]="brandDialog" [modal]="true" [closable]="false" [style]="{ width: '600px' }" [draggable]="false" [resizable]="false">
+    <form [formGroup]="brandForm" (ngSubmit)="onSubmit()">
+      <div class="p-field">
+        <label for="nameEn">Name (EN)</label>
+        <input pInputText formControlName="nameEn" id="nameEn" />
+        <small class="p-error" *ngIf="submitted && brandForm.controls['nameEn'].invalid">Name is required.</small>
+      </div>
+
+      <div class="p-field my-4">
+        <label for="nameAr">Name (AR)</label>
+        <input pInputText formControlName="nameAr" id="nameAr" />
+        <small class="p-error" *ngIf="submitted && brandForm.controls['nameAr'].invalid">Name is required.</small>
+      </div>
+
+      <div class="p-dialog-footer">
+        <button pButton label="Cancel" icon="pi pi-times" (click)="hideDialog()" class="p-button-text" type="button"></button>
+        <button pButton label="Save" icon="pi pi-check" type="submit" [disabled]="brandForm.invalid"></button>
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-confirmDialog [style]="{ width: '450px' }" />
+</div>

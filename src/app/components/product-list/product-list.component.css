@@ -1,0 +1,47 @@
+:host ::ng-deep .p-dialog .product-image {
+  width: 150px;
+  margin: 0 auto 2rem auto;
+  display: block;
+}
+
+:host ::ng-deep .p-dropdown {
+    width: 100%;
+    min-width: 200px;
+    border: 1px solid #ced4da !important; /* Default border color */
+    background-color: #fff !important;     /* White background */
+    border-radius: 6px !important;         /* Rounded corners */
+    box-shadow: none !important;           /* Remove shadow */
+}
+
+:host ::ng-deep .p-dropdown-panel {
+    min-width: 200px;
+}
+
+:host ::ng-deep .p-dropdown-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+:host ::ng-deep .p-dropdown-item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.product-name-ellipsis {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 16rem;
+}
+
+:host ::ng-deep .p-table {
+  table-layout: auto !important;
+  width: 100% !important;
+  min-width: 60rem !important;
+  overflow-x: auto;
+}

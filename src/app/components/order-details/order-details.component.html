@@ -1,0 +1,149 @@
+<p-toast></p-toast>
+
+<div class="w-full">
+  <!-- Header Section -->
+   
+  <div class="flex  items-center mb-6 px-4 w-full" style="justify-content: space-between;">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Order Details</h1>
+      <p class="text-gray-600 mt-1">Order #{{order?.id}}</p>
+    </div>
+  
+    <div>
+      <button pButton label="Back to Orders" icon="pi pi-arrow-left" (click)="goBack()" 
+        class="p-button-secondary p-button-rounded"></button>
+    </div>
+  </div>
+  
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center h-64">
+    <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+  </div>
+
+  <!-- Order Content -->
+  <div *ngIf="!loading && order" class="w-full px-4">
+    <!-- Status Card -->
+    <p-card header="Order Status" styleClass="shadow-lg border-round-lg w-full mb-4">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center gap-3">
+          <span class="text-lg font-semibold">Current Status:</span>
+          <p-tag [severity]="getStatusSeverity(order.status)" 
+            [value]="getStatusLabel(order.status)"
+            styleClass="text-lg px-3 py-2"></p-tag>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-lg font-semibold">Update Status:</span>
+          <p-dropdown [options]="statusOptions" 
+            [(ngModel)]="selectedStatus" 
+            (onChange)="updateOrderStatus(order.id, selectedStatus)"
+            [disabled]="loading"
+            styleClass="w-48"
+            optionLabel="label"
+            optionValue="value">
+          </p-dropdown>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Order Information -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Order Details Card -->
+      <p-card header="Order Information" styleClass="shadow-lg border-round-lg h-full">
+        <div class="grid gap-4">
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Order ID</span>
+            <span class="text-gray-900">{{order.id}}</span>
+          </div>
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Order Date</span>
+            <span class="text-gray-900">{{order.createdAt | date:'medium'}}</span>
+          </div>
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Last Updated</span>
+            <span class="text-gray-900">{{order.updatedAt | date:'medium'}}</span>
+          </div>
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Total Amount</span>
+            <span class="text-gray-900 font-bold">${{order.totalAmount}}</span>
+          </div>
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Payment Method</span>
+            <span class="text-gray-900">{{order.paymentMethod}}</span>
+          </div>
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Payment Status</span>
+            <p-tag [severity]="order.paymentStatus === 'paid' ? 'success' : 'warning'" 
+              [value]="order.paymentStatus"></p-tag>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Customer Information Card -->
+      <p-card header="Customer Information" styleClass="shadow-lg border-round-lg h-full">
+        <div class="grid gap-4">
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Name : </span>
+            <span class="text-gray-900"> {{order.customerName}}</span>
+          </div>
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Email  </span>
+            <span class="text-gray-900"> <a href="mailto:{{order.customerEmail}}"> : {{order.customerEmail}}</a></span>
+          </div>
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Phone  </span>
+            <span class="text-gray-900"> <a href="tel:{{order.customerPhone}}"> : {{order.customerPhone}}</a></span>
+          </div>
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="font-semibold text-gray-700">Address :         </span>
+            <span class="text-gray-900">    {{order.shippingAddress}}</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Order Items Card -->
+    <p-card header="Order Items" styleClass="shadow-lg border-round-lg w-full">
+      <div class="w-full overflow-x-auto">
+        <p-table [value]="order.items" [loading]="loading" 
+          styleClass="p-datatable-sm p-datatable-gridlines w-full"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
+          [rows]="10" [paginator]="true" 
+          [resizableColumns]="true">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="text-center" style="width: 40%">Image</th>
+              <th class="text-left" style="width: 20%">Product Name</th>
+              <th class="text-right" style="width: 15%">Price</th>
+              <th class="text-center" style="width: 15%">Quantity</th>
+              <th class="text-right" style="width: 15%">Total</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr>
+              <td class="text-center">
+                <img [src]="item.mainImage" [alt]="item.nameEn" class="w-8rem h-8rem object-cover border-round shadow-2" />
+              </td>
+              <td class="font-medium text-lg">
+               
+                  <h1 class="text-gray-900">{{item.nameEn}}</h1>
+                  <h1 class="text-gray-600 text-sm">{{item.nameAr}}</h1>
+               
+              </td>
+              <td class="text-right text-lg">${{item.price}}</td>
+              <td class="text-center text-lg">{{item.quantity}}</td>
+              <td class="text-right font-bold text-lg">${{item.price * item.quantity}}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <tr>
+              <td colspan="4" class="text-right font-bold text-xl">Total Amount:</td>
+              <td class="text-right font-bold text-xl">${{order.totalAmount}}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </p-card>
+  </div>
+</div>

@@ -1,0 +1,183 @@
+<div class="card">
+  <!-- Back Button -->
+  <div class="mb-4">
+    <button pButton label="Back to Posts" icon="pi pi-arrow-left" class="p-button-outlined" (click)="goBack()"></button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex align-items-center justify-content-center" style="min-height: 400px;">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <span class="ml-2">Loading post details...</span>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="flex align-items-center justify-content-center text-red-500" style="min-height: 400px;">
+    <i class="pi pi-exclamation-triangle mr-2" style="font-size: 2rem"></i>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Post Content -->
+  <div *ngIf="!isLoading && !errorMessage && post" class="post-details">
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="post-image-container">
+          <img [src]="post.image || 'https://images.pexels.com/photos/31067936/pexels-photo-31067936/free-photo-of-minimalist-architectural-white-wall-with-blue-sky.jpeg'" 
+               [alt]="post.title" 
+               class="post-image" />
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="title">
+        <h1 class="text-3xl font-bold mb-2">{{ post.title }}</h1>
+      </ng-template>
+
+      <ng-template pTemplate="subtitle">
+        <div class="flex align-items-center gap-2 mb-3">
+          <i class="pi pi-user text-gray-500"></i>
+          <span class="text-gray-600">{{ author?.fullName || 'Unknown Author' }}</span>
+        </div>
+        <div class="flex align-items-center gap-4 text-sm text-gray-500">
+          <span><i class="pi pi-calendar mr-1"></i> {{ post.createdAt.toDate() | date:'medium' }}</span>
+          <span *ngIf="post.updatedAt"><i class="pi pi-refresh mr-1"></i> Updated: {{ post.updatedAt.toDate() | date:'medium' }}</span>
+          <button pButton 
+                  [icon]="isPostLiked() ? 'pi pi-heart-fill' : 'pi pi-heart'" 
+                  class="p-button-rounded p-button-text" 
+                  [class.text-red-500]="isPostLiked()"
+                  (click)="likePost()">
+          </button>
+          <span class="text-sm">{{ post.likesCount }} likes</span>
+        </div>
+      </ng-template>
+
+      <div class="post-content mb-4">
+        {{ post.content }}
+      </div>
+
+      <p-divider></p-divider>
+
+      <div class="flex align-items-center gap-4 text-gray-500">
+        <span class="flex align-items-center gap-1">
+          <i class="pi pi-eye"></i>
+          {{ post.views }} views
+        </span>
+        <span class="flex align-items-center gap-1">
+          <i class="pi pi-heart"></i>
+          {{ post.likesCount }} likes
+        </span>
+        <span class="flex align-items-center gap-1">
+          <i class="pi pi-comments"></i>
+          {{ commentsWithReplies.length }} comments
+        </span>
+      </div>
+    </p-card>
+
+    <!-- Comments Section -->
+    <div class="comments-section" *ngIf="post">
+      <h3>Comments</h3>
+      
+      <!-- New Comment Form -->
+      <div class="new-comment">
+        <div class="comment-input">
+          <p-avatar [image]="getUserProfile(auth.currentUser?.uid || '').photoURL" shape="circle" size="normal"></p-avatar>
+          <textarea pInputTextarea [(ngModel)]="newCommentContent" placeholder="Write a comment..." rows="3"></textarea>
+        </div>
+        <button pButton label="Comment" (click)="addComment()" [disabled]="!newCommentContent.trim()"></button>
+      </div>
+
+      <!-- Comments List -->
+      <div class="comments-list">
+        <div *ngFor="let item of commentsWithReplies" class="comment-item">
+          <div class="comment-header">
+            <p-avatar [image]="getUserProfile(item.comment.userId).photoURL" shape="circle" size="normal"></p-avatar>
+            <div class="comment-info">
+              <span class="author-name">{{ getUserProfile(item.comment.userId).name }}</span>
+              <span class="comment-date">{{ formatDate(item.comment.createdAt) | date:'medium' }}</span>
+            </div>
+          </div>
+          <div class="comment-content">
+            <p>{{ item.comment.content }}</p>
+          </div>
+          <div class="comment-actions">
+            <button pButton [icon]="isCommentLiked(item.comment) ? 'pi pi-heart-fill' : 'pi pi-heart'" 
+                    [class.p-button-danger]="isCommentLiked(item.comment)"
+                    (click)="likeComment(item.comment)" 
+                    class="p-button-text">
+              {{ item.comment.likesCount }}
+            </button>
+            <button pButton label="Reply" (click)="startReply(item.comment)" class="p-button-text"></button>
+            <button *ngIf="auth.currentUser?.uid === item.comment.userId" pButton label="Edit" (click)="editComment(item.comment)" class="p-button-text"></button>
+            <button *ngIf="auth.currentUser?.uid === item.comment.userId" pButton label="Delete" (click)="deleteComment(item.comment.commentId)" class="p-button-text p-button-danger"></button>
+          </div>
+
+          <!-- Reply Form -->
+          <div class="reply-form" *ngIf="replyingToComment?.commentId === item.comment.commentId">
+            <div class="comment-input">
+              <p-avatar [image]="getUserProfile(auth.currentUser?.uid || '').photoURL" shape="circle" size="normal"></p-avatar>
+              <textarea pInputTextarea [(ngModel)]="newReplyContent" placeholder="Write a reply..." rows="2"></textarea>
+            </div>
+            <div class="reply-actions">
+              <button pButton label="Reply" (click)="addReply()" [disabled]="!newReplyContent.trim()"></button>
+              <button pButton label="Cancel" (click)="cancelReply()" class="p-button-text"></button>
+            </div>
+          </div>
+
+          <!-- Replies List -->
+          <div class="replies-list" *ngIf="item.replies.length > 0">
+            <div *ngFor="let reply of item.replies" class="reply-item">
+              <div class="reply-header">
+                <p-avatar [image]="getUserProfile(reply.userId).photoURL" shape="circle" size="normal"></p-avatar>
+                <div class="reply-info">
+                  <span class="author-name">{{ getUserProfile(reply.userId).name }}</span>
+                  <span class="reply-date">{{ formatDate(reply.createdAt) | date:'medium' }}</span>
+                </div>
+              </div>
+              <div class="reply-content">
+                <p>{{ reply.content }}</p>
+              </div>
+              <div class="reply-actions">
+                <button pButton [icon]="isReplyLiked(reply) ? 'pi pi-heart-fill' : 'pi pi-heart'" 
+                        [class.p-button-danger]="isReplyLiked(reply)"
+                        (click)="likeReply(reply)" 
+                        class="p-button-text">
+                  {{ reply.likesCount }}
+                </button>
+                <button *ngIf="auth.currentUser?.uid === reply.userId" pButton label="Edit" (click)="editReply(reply)" class="p-button-text"></button>
+                <button *ngIf="auth.currentUser?.uid === reply.userId" pButton label="Delete" (click)="deleteReply(reply.replyId)" class="p-button-text p-button-danger"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Comment Dialog -->
+<p-dialog [(visible)]="showEditCommentDialog" [style]="{width: '450px'}" header="Edit Comment" [modal]="true" [draggable]="false" [resizable]="false">
+  <div class="p-fluid">
+    <div class="field">
+      <label for="commentContent">Comment</label>
+      <textarea id="commentContent" pInputTextarea [(ngModel)]="editedCommentContent" rows="5" class="w-full"></textarea>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="showEditCommentDialog=false"></button>
+    <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveCommentEdit()"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Edit Reply Dialog -->
+<p-dialog [(visible)]="showEditReplyDialog" [style]="{width: '450px'}" header="Edit Reply" [modal]="true" [draggable]="false" [resizable]="false">
+  <div class="p-fluid">
+    <div class="field">
+      <label for="replyContent">Reply</label>
+      <textarea id="replyContent" pInputTextarea [(ngModel)]="editedReplyContent" rows="5" class="w-full"></textarea>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="showEditReplyDialog=false"></button>
+    <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveReplyEdit()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

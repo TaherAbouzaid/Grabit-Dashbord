@@ -1,0 +1,70 @@
+<div class="login-container">
+  <div class="login-box">
+    <div class="logo">
+      <i class="pi pi-shopping-cart" style="font-size: 3rem; color: #4CAF50;"></i>
+    </div>
+    <h2>Login</h2>
+    <p>Welcome back! Please enter your details</p>
+
+    <form (ngSubmit)="onSubmit()" [formGroup]="loginForm">
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <div class="input-container">
+          <i class="pi pi-envelope input-icon"></i>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="Enter your email"
+            class="form-control"
+            [class.error-input]="emailError"
+          >
+        </div>
+        <!-- Email error messages -->
+        <div class="error-message" *ngIf="emailError">
+          {{ emailError }}
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-container">
+          <i class="pi pi-lock input-icon"></i>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            placeholder="Enter your password"
+            class="form-control"
+            [class.error-input]="passwordError"
+          >
+        </div>
+        <button type="button" class="forgot" (click)="forgotPassword()">Forgot password?</button>
+        <!-- Password error messages -->
+        <div class="error-message" *ngIf="passwordError">
+          {{ passwordError }}
+        </div>
+      </div>
+
+      <!-- Firebase error message -->
+      <div class="error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Remember Me -->
+      <div class="checkbox-group">
+        <input type="checkbox" id="rememberMe" formControlName="rememberMe">
+        <label for="rememberMe">Remember me</label>
+      </div>
+
+      <!-- Login Button -->
+      <button type="submit" [disabled]="loginForm.invalid || isLoading" class="login-button">
+        <i class="pi" [ngClass]="isLoading ? 'pi-spin pi-spinner' : 'pi-sign-in'"></i>
+        <span>{{ isLoading ? 'Logging in...' : 'Login' }}</span>
+      </button>
+    </form>
+  </div>
+  <p-toast></p-toast>
+</div>

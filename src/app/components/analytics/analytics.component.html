@@ -1,0 +1,201 @@
+<div class="grid">
+    <!-- Date Range Filter -->
+    <div class="col-12">
+        <p-card>
+            <div class="flex align-items-center gap-3">
+                <span class="p-input-icon-left">
+                    <i class="pi pi-calendar"></i>
+                    <p-calendar [(ngModel)]="dateRange" selectionMode="range" [showButtonBar]="true" 
+                        placeholder="Select Date Range" styleClass="w-20rem"></p-calendar>
+                </span>
+                <p-button label="Apply Filter" icon="pi pi-filter" (onClick)="applyDateFilter()"></p-button>
+                <p-button label="Export Data" icon="pi pi-download" severity="secondary" (onClick)="exportData()"></p-button>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Detailed Sales Analysis -->
+    <div class="col-12 lg:col-6">
+        <p-card header="Detailed Sales Analysis">
+            <p-chart type="line" [data]="salesData" [options]="chartOptions"></p-chart>
+            <div class="mt-4">
+                <h4>Sales Summary</h4>
+                <div class="grid">
+                    <div class="col-6">
+                        <div class="surface-card p-3 border-round">
+                            <div class="text-500 mb-2">Total Sales</div>
+                            <div class="text-2xl font-bold">{{totalSales | currency}}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="surface-card p-3 border-round">
+                            <div class="text-500 mb-2">Average Order Value</div>
+                            <div class="text-2xl font-bold">{{averageOrderValue | currency}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Category Performance -->
+    <div class="col-12 lg:col-6">
+        <p-card header="Category Performance">
+            <p-chart type="pie" [data]="categoryData" [options]="chartOptions"></p-chart>
+            <div class="mt-4">
+                <h4>Category Details</h4>
+                <p-table [value]="categoryDetails" [tableStyle]="{'min-width': '50rem'}">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Category</th>
+                            <th>Products</th>
+                            <th>Sales</th>
+                            <th>Growth</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-category>
+                        <tr>
+                            <td>{{category.name}}</td>
+                            <td>{{category.products}}</td>
+                            <td>{{category.sales | currency}}</td>
+                            <td>
+                                <p-tag [value]="category.growth + '%'" 
+                                    [severity]="category.growth > 0 ? 'success' : 'danger'">
+                                </p-tag>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Product Performance -->
+    <div class="col-12 lg:col-6">
+        <p-card header="Product Performance">
+            <p-chart type="bar" [data]="topProductsData" [options]="chartOptions"></p-chart>
+            <div class="mt-4">
+                <h4>Product Details</h4>
+                <p-table [value]="productDetails" [tableStyle]="{'min-width': '50rem'}">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Product</th>
+                            <th>Revenue</th>
+                            <th>Units Sold</th>
+                            <th>Profit Margin</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-product>
+                        <tr>
+                            <td>{{product.name}}</td>
+                            <td>{{product.revenue | currency}}</td>
+                            <td>{{product.unitsSold}}</td>
+                            <td>
+                                <p-tag [value]="product.profitMargin + '%'" 
+                                    [severity]="product.profitMargin > 20 ? 'success' : 'warning'">
+                                </p-tag>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Inventory Analysis -->
+    <div class="col-12 lg:col-6">
+        <p-card header="Inventory Analysis">
+            <p-chart type="doughnut" [data]="inventoryData" [options]="chartOptions"></p-chart>
+            <div class="mt-4">
+                <h4>Inventory Details</h4>
+                <div class="grid">
+                    <div class="col-4">
+                        <div class="surface-card p-3 border-round">
+                            <div class="text-500 mb-2">Low Stock Items</div>
+                            <div class="text-2xl font-bold text-orange-500">{{lowStockCount}}</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="surface-card p-3 border-round">
+                            <div class="text-500 mb-2">Out of Stock</div>
+                            <div class="text-2xl font-bold text-red-500">{{outOfStockCount}}</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="surface-card p-3 border-round">
+                            <div class="text-500 mb-2">Total Value</div>
+                            <div class="text-2xl font-bold text-green-500">{{inventoryValue | currency}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Trending Products -->
+    <div class="col-12">
+        <p-card header="Trending Products Analysis">
+            <p-table [value]="trendingProducts" [tableStyle]="{'min-width': '50rem'}" [paginator]="true" [rows]="5">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 30%">Product</th>
+                        <th style="width: 15%">Trending Score</th>
+                        <th style="width: 10%">Views</th>
+                        <th style="width: 10%">Wishlist</th>
+                        <th style="width: 10%">Cart Adds</th>
+                        <th style="width: 10%">Sales</th>
+                        <th style="width: 15%">Last Update</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-product>
+                    <tr>
+                        <td>
+                            <div class="flex align-items-center gap-2">
+                                <img [src]="product.mainImage" [alt]="product.title?.en" 
+                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                <div class="flex flex-column">
+                                    <span class="font-bold">{{product.title?.en}}</span>
+                                    <small class="text-500">{{product.categoryId?.name?.en || 'No Category'}}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <p-tag [value]="product.trendingScore" 
+                                [severity]="product.trendingScore > 100 ? 'success' : product.trendingScore > 50 ? 'info' : 'warning'">
+                            </p-tag>
+                        </td>
+                        <td>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-eye text-500"></i>
+                                <span>{{product.views}}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-heart text-500"></i>
+                                <span>{{product.wishlistCount}}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-shopping-cart text-500"></i>
+                                <span>{{product.cartAdds}}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex align-items-center gap-2">
+                                <span>{{product.soldCount}}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex flex-column">
+                                <span>{{product.updatedAt | date:'short'}}</span>
+                                <small class="text-500">{{product.updatedAt | date:'shortTime'}}</small>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+    </div>
+</div> 

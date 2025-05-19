@@ -1,0 +1,61 @@
+<div class="add-post-container">
+  <h2>Create New Post</h2>
+  
+  <form [formGroup]="postForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="title">Title</label>
+      <input 
+        type="text" 
+        id="title" 
+        formControlName="title" 
+        class="form-control"
+        [class.is-invalid]="title?.invalid && (title?.dirty || title?.touched)">
+      
+      <div *ngIf="title?.invalid && (title?.dirty || title?.touched)" class="invalid-feedback">
+        <div *ngIf="title?.errors?.['required']">Title is required</div>
+        <div *ngIf="title?.errors?.['minlength']">Title must be at least 5 characters</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="content">Content</label>
+      <textarea 
+        id="content" 
+        formControlName="content" 
+        rows="8"
+        class="form-control"
+        [class.is-invalid]="content?.invalid && (content?.dirty || content?.touched)"></textarea>
+      
+      <div *ngIf="content?.invalid && (content?.dirty || content?.touched)" class="invalid-feedback">
+        <div *ngIf="content?.errors?.['required']">Content is required</div>
+        <div *ngIf="content?.errors?.['minlength']">Content must be at least 20 characters</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="image">Image</label>
+      <input 
+        type="file" 
+        id="image" 
+        (change)="onImageSelected($event)" 
+        accept="image/*" 
+        class="form-control">
+      <div *ngIf="postForm.value.image" class="mt-2">
+        <label>Current Image Preview:</label>
+        <img [src]="postForm.value.image" alt="Current Image" style="max-width: 200px; max-height: 200px; display: block; border: 1px solid #ccc; margin-top: 8px;" />
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <button 
+      type="submit" 
+      class="btn btn-primary"
+      [disabled]="postForm.invalid || isLoading">
+      <span *ngIf="isLoading" class="spinner-border spinner-border-sm"></span>
+      {{ isLoading ? 'Submitting...' : (isEditMode ? 'Update' : 'Publish') }}
+    </button>
+  </form>
+</div>  

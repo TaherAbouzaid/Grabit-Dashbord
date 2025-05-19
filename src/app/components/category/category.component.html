@@ -1,0 +1,192 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+<div class="card">
+  <p-toolbar>
+    <div class="p-toolbar-group-left">
+      <button class="mr-8"
+        pButton
+        label="Add Category"
+        icon="pi pi-plus"
+        (click)="openNewCategory()"
+      ></button>
+      <button
+        pButton
+        label="Add Subcategory"
+        icon="pi pi-plus"
+        (click)="openNewSubcategory()"
+      ></button>
+    </div>
+  </p-toolbar>
+
+  <p-table
+    [value]="categories"
+    [paginator]="true"
+    [rows]="10"
+    responsiveLayout="scroll"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Name (English)</th>
+        <th>Name (Arabic)</th>
+        <th>Slug</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-category>
+      <tr>
+        <td>{{ category.name.en }}</td>
+        <td>{{ category.name.ar }}</td>
+        <td>{{ category.slug }}</td>
+        <td>
+          <button
+            pButton
+            icon="pi pi-pencil"
+            class="p-button-rounded p-button-success p-mr-2"
+            (click)="editCategory(category)"
+          ></button>
+          <button
+            pButton
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-danger"
+            (click)="deleteCategory(category)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-table
+    [value]="subcategories"
+    [paginator]="true"
+    [rows]="10"
+    responsiveLayout="scroll"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Name (English)</th>
+        <th>Name (Arabic)</th>
+        <th>Parent Category</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-subcategory>
+      <tr>
+        <td>{{ subcategory.name.en }}</td>
+        <td>{{ subcategory.name.ar }}</td>
+        <td>{{ getCategoryName(subcategory.parentCategoryId) }}</td>
+        <td>
+          <button
+            pButton
+            icon="pi pi-pencil"
+            class="p-button-rounded p-button-success p-mr-2"
+            (click)="editSubcategory(subcategory)"
+          ></button>
+          <button
+            pButton
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-danger"
+            (click)="deleteSubcategory(subcategory)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  header="{{ selectedCategory ? 'Edit' : 'Add' }} Category"
+  [(visible)]="displayCategoryDialog"
+  [modal]="true"
+  [closable]="false"
+  [style]="{width: '600px'}"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+    <div formGroupName="name">
+      <div class="p-field">
+        <label for="name-en">Name (English)</label>
+        <input id="name-en" type="text" pInputText formControlName="en" />
+      </div>
+      <div class="p-field my-4">
+        <label for="name-ar">Name (Arabic)</label>
+        <input id="name-ar" type="text" pInputText formControlName="ar" />
+      </div>
+    </div>
+
+    <div class="p-field">
+      <label for="slug">Slug</label>
+      <input id="slug" type="text" pInputText formControlName="slug" />
+    </div>
+
+    <div class="p-dialog-footer">
+      <button
+        pButton
+        label="Cancel"
+        icon="pi pi-times"
+        (click)="displayCategoryDialog = false"
+        class="p-button-text"
+      ></button>
+      <button
+        pButton
+        label="Save"
+        icon="pi pi-check"
+        type="submit"
+        [disabled]="categoryForm.invalid"
+      ></button>
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog
+  header="{{ selectedSubcategory ? 'Edit' : 'Add' }} Subcategory"
+  [(visible)]="displaySubcategoryDialog"
+  [modal]="true"
+  [closable]="false"
+  [style]="{width: '600px'}"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <form [formGroup]="subcategoryForm" (ngSubmit)="saveSubcategory()">
+    <div formGroupName="name">
+      <div class="p-field">
+        <label for="sub-name-en">Name (English)</label>
+        <input id="sub-name-en" type="text" pInputText formControlName="en" />
+      </div>
+      <div class="p-field my-4">
+        <label for="sub-name-ar">Name (Arabic)</label>
+        <input id="sub-name-ar" type="text" pInputText formControlName="ar" />
+      </div>
+    </div>
+
+    <div class="p-field">
+      <label for="parentCategoryId">Parent Category</label>
+      <select
+        id="parentCategoryId"
+        pInputText
+        formControlName="parentCategoryId"
+      >
+        <option *ngFor="let cat of categories" [value]="cat.categoryId">
+          {{ cat.name.en }}
+        </option>
+      </select>
+    </div>
+
+    <div class="p-dialog-footer">
+      <button
+        pButton
+        label="Cancel"
+        icon="pi pi-times"
+        (click)="displaySubcategoryDialog = false"
+        class="p-button-text"
+      ></button>
+      <button
+        pButton
+        label="Save"
+        icon="pi pi-check"
+        type="submit"
+        [disabled]="subcategoryForm.invalid"
+      ></button>
+    </div>
+  </form>
+</p-dialog>

@@ -1,0 +1,21 @@
+<!-- <p>header worksdd</p> -->
+
+<div class="header">
+  <div class="header-left">
+    <img src="assets/logo.png" alt="Logo" class="logo">
+  </div>
+  <div class="header-right">
+    <div class="user-info" *ngIf="userEmail">
+      <p-menu #menu [popup]="true" [model]="menuItems"></p-menu>
+      <div class="profile-content" (click)="menu.toggle($event)">
+        <p-avatar *ngIf="userImage" [image]="userImage" shape="circle" size="normal"></p-avatar>
+        <p-avatar *ngIf="!userImage" icon="pi pi-user" shape="circle" size="normal"></p-avatar>
+        <div class="user-details">
+          <span class="user-name">{{ userName }}</span>
+          <span class="user-role">{{ userRole }}</span>
+        </div>
+        <i class="pi pi-angle-down ml-2"></i>
+      </div>
+    </div>
+  </div>
+</div>

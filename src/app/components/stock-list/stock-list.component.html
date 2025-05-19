@@ -1,0 +1,51 @@
+<div class="card">
+  <h2>Stock List</h2>
+  <div class="flex gap-4 mb-4">
+    <input pInputText [(ngModel)]="filterText" placeholder="Search by product or variant name..." />
+    <select [(ngModel)]="filterType">
+      <option value="all">All</option>
+      <option value="simple">Simple</option>
+      <option value="variant">Variant</option>
+    </select>
+  </div>
+  <table class="table-auto w-full border">
+    <thead>
+      <tr>
+        <th class="px-2 py-1 border">Product Name</th>
+        <th class="px-2 py-1 border">Variant Name</th>
+        <th class="px-2 py-1 border">Image</th>
+        <th class="px-2 py-1 border">Quantity</th>
+        <th class="px-2 py-1 border">Type</th>
+        <th class="px-2 py-1 border">Attributes</th>
+        <th class="px-2 py-1 border">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of filteredRows">
+        <td class="px-2 py-1 border">{{ row.productName }}</td>
+        <td class="px-2 py-1 border">{{ row.variantName }}</td>
+        <td class="px-2 py-1 border">
+          <img *ngIf="row.image" [src]="row.image" alt="image" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px;" />
+        </td>
+        <td class="px-2 py-1 border">{{ row.quantity }}</td>
+        <td class="px-2 py-1 border">{{ row.type }}</td>
+        <td class="px-2 py-1 border">
+          <ng-container *ngIf="row.type === 'variant' && row.attributes?.length > 0; else noAttr">
+            <div *ngFor="let attr of row.attributes">
+              <span class="font-semibold">{{ attr.key }}:</span>
+              <span>{{ attr.value }}</span>
+            </div>
+          </ng-container>
+          <ng-template #noAttr>-</ng-template>
+        </td>
+        <td class="px-2 py-1 border">
+          <button pButton pRipple icon="pi pi-pencil" class="p-button-sm p-button-text" (click)="editProduct(row.productId)"></button>
+        </td>
+      </tr>
+      <tr *ngIf="filteredRows.length === 0">
+        <td colspan="5" class="text-center py-4">No products found.</td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="loading" class="text-center py-4">Loading...</div>
+</div> 

@@ -1,0 +1,68 @@
+:host ::ng-deep .p-dialog .product-image {
+  width: 150px;
+  margin: 0 auto 2rem auto;
+  display: block;
+}
+
+.p-dialog {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.p-dialog .p-dialog-header {
+  background: #f8f9fa !important;
+  border-bottom: 1px solid #e9ecef !important;
+  padding: 1.25rem !important;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+}
+
+.p-dialog .p-dialog-content {
+  padding: 2rem !important;
+}
+
+.p-dialog .p-field {
+  margin-bottom: 1.5rem !important;
+}
+
+.p-dialog .p-field label {
+  display: block !important;
+  margin-bottom: 0.5rem !important;
+  color: #666 !important;
+  font-weight: 500 !important;
+  font-size: 0.95rem !important;
+}
+
+.p-dialog .p-field input {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 6px !important;
+  transition: all 0.2s !important;
+  font-size: 1rem !important;
+}
+
+.p-dialog .p-field input:focus {
+  border-color: #5caf90 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(92, 175, 144, 0.1) !important;
+}
+
+.p-dialog .p-dialog-footer {
+  border-top: 1px solid #e9ecef !important;
+  padding: 1.25rem !important;
+  text-align: right !important;
+  background: #f8f9fa !important;
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+}
+
+.p-dialog .p-button {
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.95rem !important;
+  border-radius: 6px !important;
+}
+
+.my-4 {
+  margin: 1rem 0 !important;
+}
