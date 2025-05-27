@@ -1,27 +1,55 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy, Timestamp, collectionData, docData, getDoc } from '@angular/fire/firestore';
+import {
+  Firestore,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc as firestoreDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  Timestamp,
+  collectionData,
+  docData,
+  getDoc,
+} from '@angular/fire/firestore';
 import { Order, OrderStatus, OrderDisplay } from '../../models/order.model';
-import { Observable, from, map, take, tap, catchError, of, forkJoin, switchMap, mergeMap, firstValueFrom, defer } from 'rxjs';
+import {
+  Observable,
+  from,
+  map,
+  take,
+  tap,
+  catchError,
+  of,
+  forkJoin,
+  switchMap,
+  mergeMap,
+  firstValueFrom,
+  defer,
+} from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OrderService {
   private readonly COLLECTION_NAME = 'orders';
   private readonly USERS_COLLECTION = 'users';
   private readonly PRODUCTS_COLLECTION = 'allproducts';
   totalSales: number = 0;
-  constructor(private firestore: Firestore) { }
-
+  constructor(private firestore: Firestore) {}
 
   // ngOnInit() {
-   
-  // }
 
+  // }
 
   private async getUserData(userId: string): Promise<any> {
     try {
-      const userDoc = await getDoc(doc(this.firestore, this.USERS_COLLECTION, userId));
+      const userDoc = await getDoc(
+        firestoreDoc(this.firestore, this.USERS_COLLECTION, userId)
+      );
       if (userDoc.exists()) {
         return userDoc.data();
       }
@@ -37,19 +65,23 @@ export class OrderService {
       console.log('getProductData: Starting to fetch product...');
       console.log('getProductData: Collection name:', this.PRODUCTS_COLLECTION);
       console.log('getProductData: Product ID:', productId);
-      
-      const productRef = doc(this.firestore, this.PRODUCTS_COLLECTION, productId);
+
+      const productRef = firestoreDoc(
+        this.firestore,
+        this.PRODUCTS_COLLECTION,
+        productId
+      );
       console.log('getProductData: Product reference created');
-      
+
       const productDoc = await getDoc(productRef);
       console.log('getProductData: Document exists:', productDoc.exists());
-      
+
       if (productDoc.exists()) {
         const productData = productDoc.data();
         console.log('getProductData: Product data retrieved:', productData);
         return productData;
       }
-      
+
       console.log('getProductData: No product data found for ID:', productId);
       return null;
     } catch (error: any) {
@@ -57,7 +89,7 @@ export class OrderService {
       console.error('getProductData: Error details:', {
         productId,
         collection: this.PRODUCTS_COLLECTION,
-        error: error.message
+        error: error.message,
       });
       return null;
     }
@@ -78,24 +110,67 @@ export class OrderService {
       console.log('User data:', userData);
 
       // Transform products
-      console.log('Transform: Starting to process products array:', data.products);
+      console.log(
+        'Transform: Starting to process products array:',
+        data.products
+      );
       const itemsWithProductData = await Promise.all(
         (data.products || []).map(async (item: any) => {
           console.log('Transform: Processing product item:', item);
           console.log('Transform: Product ID to fetch:', item.productId);
-          
+
           const productData = await this.getProductData(item.productId);
           console.log('Transform: Received product data:', productData);
-          
+
+          let variantData: any = null;
+          if (item.variantId) {
+            try {
+              const variantRef = firestoreDoc(
+                this.firestore,
+                this.PRODUCTS_COLLECTION,
+                item.productId,
+                'variants',
+                item.variantId
+              );
+              const variantDoc = await getDoc(variantRef);
+              if (variantDoc.exists()) {
+                variantData = variantDoc.data();
+                console.log('Transform: Received variant data:', variantData);
+              } else {
+                console.log(
+                  'Transform: Variant data not found for ID:',
+                  item.variantId
+                );
+              }
+            } catch (error) {
+              console.error('Transform: Error fetching variant data:', error);
+            }
+          }
+
           const transformedItem = {
             productId: item.productId,
-            nameEn: productData?.name?.en || productData?.title?.en || 'Unknown Product',
-            nameAr: productData?.name?.ar || productData?.title?.ar || 'منتج غير معروف',
-            price: Number(productData?.price) || Number(productData?.discountPrice) || 0,
+            nameEn:
+              variantData?.title?.en ||
+              productData?.name?.en ||
+              productData?.title?.en ||
+              'Unknown Product',
+            nameAr:
+              variantData?.title?.ar ||
+              productData?.name?.ar ||
+              productData?.title?.ar ||
+              'منتج غير معروف',
+            price:
+              Number(item.price) ||
+              Number(variantData?.price) ||
+              Number(variantData?.discountPrice) ||
+              Number(productData?.price) ||
+              Number(productData?.discountPrice) ||
+              0,
             quantity: item.quantity || 0,
-            sku: productData?.sku || '',
+            sku: variantData?.sku || productData?.sku || '',
             variantId: item.variantId || '',
-            mainImage: productData?.mainImage || ''
+            mainImage: variantData?.mainImage || productData?.mainImage || '',
+            variantAttributes: item.variantAttributes || [],
           };
           console.log('Transform: Transformed item:', transformedItem);
           return transformedItem;
@@ -114,11 +189,11 @@ export class OrderService {
         status: this.validateStatus(data.status),
         paymentMethod: data.paymentMethod || 'cash',
         paymentStatus: 'pending',
-        shippingAddress: data.shippingAddress ? 
-          `${data.shippingAddress.address}, ${data.shippingAddress.city}, ${data.shippingAddress.country}` : 
-          'No Address',
+        shippingAddress: data.shippingAddress
+          ? `${data.shippingAddress.address}, ${data.shippingAddress.city}, ${data.shippingAddress.country}`
+          : 'No Address',
         createdAt: this.parseDate(data.createdAt),
-        updatedAt: this.parseDate(data.updatedAt)
+        updatedAt: this.parseDate(data.updatedAt),
       };
 
       console.log('Transform: Final transformed order:', transformedOrder);
@@ -143,12 +218,17 @@ export class OrderService {
       paymentStatus: 'pending',
       shippingAddress: 'No Address',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
   }
 
   private validateStatus(status: any): OrderStatus {
-    const validStatuses: OrderStatus[] = ['pending', 'shipped', 'delivered', 'cancelled'];
+    const validStatuses: OrderStatus[] = [
+      'pending',
+      'shipped',
+      'delivered',
+      'cancelled',
+    ];
     return validStatuses.includes(status) ? status : 'pending';
   }
 
@@ -169,14 +249,17 @@ export class OrderService {
   }
 
   // Create new order
-  createOrder(order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Observable<string> {
+  createOrder(
+    order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>
+  ): Observable<string> {
     const orderData = {
       ...order,
       createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
+      updatedAt: Timestamp.now(),
     };
-    return from(addDoc(collection(this.firestore, this.COLLECTION_NAME), orderData))
-      .pipe(map(docRef => docRef.id));
+    return from(
+      addDoc(collection(this.firestore, this.COLLECTION_NAME), orderData)
+    ).pipe(map((docRef) => docRef.id));
   }
 
   // Get all orders
@@ -185,7 +268,9 @@ export class OrderService {
       const ordersRef = collection(this.firestore, this.COLLECTION_NAME);
       const q = query(ordersRef, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      const orders = await Promise.all(snapshot.docs.map(doc => this.transformOrderData(doc)));
+      const orders = await Promise.all(
+        snapshot.docs.map((doc) => this.transformOrderData(doc))
+      );
       return orders;
     } catch (error) {
       console.error('Error getting all orders:', error);
@@ -203,7 +288,9 @@ export class OrderService {
         orderBy('createdAt', 'desc')
       );
       const snapshot = await getDocs(q);
-      const orders = await Promise.all(snapshot.docs.map(doc => this.transformOrderData(doc)));
+      const orders = await Promise.all(
+        snapshot.docs.map((doc) => this.transformOrderData(doc))
+      );
       return orders;
     } catch (error) {
       console.error('Error getting orders by user ID:', error);
@@ -219,7 +306,7 @@ export class OrderService {
       return of(null);
     }
 
-    const orderRef = doc(this.firestore, this.COLLECTION_NAME, id);
+    const orderRef = firestoreDoc(this.firestore, this.COLLECTION_NAME, id);
     return from(getDoc(orderRef)).pipe(
       switchMap(async (doc) => {
         if (doc.exists()) {
@@ -228,7 +315,7 @@ export class OrderService {
         }
         return null;
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Service: Error getting order:', error);
         return of(null);
       })
@@ -237,16 +324,22 @@ export class OrderService {
 
   // Update order status
   updateOrderStatus(id: string, status: OrderStatus): Observable<void> {
-    const orderRef = doc(this.firestore, this.COLLECTION_NAME, id);
-    return from(updateDoc(orderRef, { 
-      status,
-      updatedAt: Timestamp.now()
-    }));
+    const orderRef = firestoreDoc(this.firestore, this.COLLECTION_NAME, id);
+    return from(
+      updateDoc(orderRef, {
+        status,
+        updatedAt: Timestamp.now(),
+      })
+    );
   }
 
   // Delete order
   deleteOrder(orderId: string): Observable<void> {
-    const orderRef = doc(this.firestore, this.COLLECTION_NAME, orderId);
+    const orderRef = firestoreDoc(
+      this.firestore,
+      this.COLLECTION_NAME,
+      orderId
+    );
     return from(deleteDoc(orderRef));
   }
 }

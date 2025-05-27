@@ -125,19 +125,19 @@ export class UserProfileComponent implements OnInit {
       try {
         const userRef = doc(this.firestore, `users/${user.uid}`);
         const userSnap = await getDoc(userRef);
-        
+
         if (userSnap.exists()) {
           const userData = userSnap.data() as User;
           this.user = userData;
           this.isVendor = userData.role === 'vendor';
-          this.profileImageUrl = userData.imageUrl || '';
-          
+          this.profileImageUrl = userData.profileImage || '';
+
           // Fill user form
           this.userForm.patchValue({
             fullName: userData.fullName,
             email: userData.email,
             phone: userData.phone,
-            profileImage: userData.imageUrl,
+            profileImage: userData.profileImage,
             address: userData.address?.[0] || {}
           });
 
@@ -145,7 +145,7 @@ export class UserProfileComponent implements OnInit {
           if (this.isVendor) {
             const vendorRef = doc(this.firestore, `vendors/${user.uid}`);
             const vendorSnap = await getDoc(vendorRef);
-            
+
             if (vendorSnap.exists()) {
               this.vendorInfo = vendorSnap.data() as VendorInfo;
               this.vendorLogoUrl = this.vendorInfo.logo || '';
@@ -204,7 +204,7 @@ export class UserProfileComponent implements OnInit {
       }
 
       try {
-        let imageUrl = this.profileImageUrl;
+        let profileImage = this.profileImageUrl;
 
         // Upload new image if selected
         if (this.selectedProfileFile) {
@@ -224,11 +224,11 @@ export class UserProfileComponent implements OnInit {
           const path = `profile-images/${currentUser.uid}_${timestamp}_${this.selectedProfileFile.name}`;
           const storageRef = ref(this.storage, path);
           const snapshot = await uploadBytes(storageRef, this.selectedProfileFile);
-          imageUrl = await getDownloadURL(snapshot.ref);
+          profileImage = await getDownloadURL(snapshot.ref);
 
           // Update Firebase Auth profile
           await updateProfile(currentUser, {
-            photoURL: imageUrl,
+            photoURL: profileImage,
             displayName: this.userForm.get('fullName')?.value
           });
 
@@ -238,7 +238,7 @@ export class UserProfileComponent implements OnInit {
 
         const userRef = doc(this.firestore, `users/${currentUser.uid}`);
         const userSnap = await getDoc(userRef);
-        
+
         if (!userSnap.exists()) {
           this.messageService.add({
             severity: 'error',
@@ -258,8 +258,8 @@ export class UserProfileComponent implements OnInit {
         if (this.userForm.get('phone')?.value) {
           updateData.phone = this.userForm.get('phone')?.value;
         }
-        if (imageUrl) {
-          updateData.imageUrl = imageUrl;
+        if (profileImage) {
+          updateData.profileImage = profileImage;
         }
 
         const addressGroup = this.userForm.get('address');
@@ -271,19 +271,19 @@ export class UserProfileComponent implements OnInit {
         }
 
         await updateDoc(userRef, updateData);
-        
+
         // Refresh user data
         const updatedUserSnap = await getDoc(userRef);
         if (updatedUserSnap.exists()) {
           this.user = updatedUserSnap.data() as User;
-          this.profileImageUrl = this.user.imageUrl || '';
-          
+          this.profileImageUrl = this.user.profileImage || '';
+
           // Update form with new values
           this.userForm.patchValue({
             fullName: this.user.fullName,
             email: this.user.email,
             phone: this.user.phone,
-            profileImage: this.user.imageUrl,
+            profileImage: this.user.profileImage,
             address: this.user.address?.[0] || {}
           });
 
@@ -355,7 +355,7 @@ export class UserProfileComponent implements OnInit {
 
         const vendorRef = doc(this.firestore, `vendors/${currentUser.uid}`);
         const vendorSnap = await getDoc(vendorRef);
-        
+
         const vendorData = {
           ...this.vendorForm.value,
           vendorId: currentUser.uid,
@@ -377,7 +377,7 @@ export class UserProfileComponent implements OnInit {
         if (updatedVendorSnap.exists()) {
           this.vendorInfo = updatedVendorSnap.data() as VendorInfo;
           this.vendorLogoUrl = this.vendorInfo.logo || '';
-          
+
           // Update form with new values
           this.vendorForm.patchValue({
             storeName: this.vendorInfo.storeName,
@@ -396,7 +396,7 @@ export class UserProfileComponent implements OnInit {
         // Clear temporary data
         this.selectedLogoFile = null;
         this.tempLogoUrl = '';
-        
+
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
@@ -438,28 +438,28 @@ export class UserProfileComponent implements OnInit {
 
       try {
         const { currentPassword, newPassword } = this.passwordForm.value;
-        
+
         // Reauthenticate user before changing password
         const credential = EmailAuthProvider.credential(
           currentUser.email!,
           currentPassword
         );
-        
+
         await reauthenticateWithCredential(currentUser, credential);
         await updatePassword(currentUser, newPassword);
-        
+
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
           detail: 'Password updated successfully'
         });
-        
+
         // Reset password form
         this.passwordForm.reset();
       } catch (error: any) {
         console.error('Error changing password:', error);
         let errorMessage = 'Failed to change password. ';
-        
+
         if (error.code === 'auth/wrong-password') {
           errorMessage += 'Current password is incorrect.';
         } else if (error.code === 'auth/weak-password') {
@@ -467,7 +467,7 @@ export class UserProfileComponent implements OnInit {
         } else {
           errorMessage += 'Please try again.';
         }
-        
+
         this.messageService.add({
           severity: 'error',
           summary: 'Error',

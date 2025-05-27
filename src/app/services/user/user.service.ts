@@ -70,7 +70,7 @@ export class UserService {
     password: string,
     fullName: string,
     role: string,
-    imageUrl: string
+    profileImage: string
   ) {
     try {
       const currentUser = this.auth.currentUser;
@@ -98,7 +98,7 @@ export class UserService {
         fullName,
         email,
         role,
-        imageUrl,
+        profileImage,
         address: '',
         phone: '',
         createdAt: Timestamp.now(),

@@ -165,7 +165,7 @@ export class ProductService {
   async uploadImage(file: File, path: string): Promise<string> {
     try {
       console.log('Starting image upload...', { file, path });
-      
+
       if (!file) {
         throw new Error('No file provided');
       }
@@ -205,13 +205,19 @@ export class ProductService {
   }
 
   // //get product by id
-  async getProductById(productId: string): Promise<Product | undefined> {
-    const productDoc = doc(this.firestore, `allproducts/${productId}`);
-    const productSnap = await getDoc(productDoc);
-    if (productSnap.exists()) {
-      return { id: productSnap.id, ...productSnap.data() } as Product;
+  async getProductById(productId: string): Promise<Product | null> {
+    try {
+      const productDoc = doc(this.firestore, `allproducts/${productId}`);
+      const productSnap = await getDoc(productDoc);
+
+      if (productSnap.exists()) {
+        return { id: productSnap.id, ...productSnap.data() } as Product;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting product by ID:', error);
+      return null;
     }
-    return undefined;
   }
 
   //update product
@@ -900,5 +906,44 @@ export class ProductService {
     const variantsRef = collection(this.firestore, `allproducts/${productId}/variants`);
     const snapshot = await getDocs(variantsRef);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+
+  async getTopProductIds(vendorId?: string): Promise<string[]> {
+    const productsRef = collection(this.firestore, 'allproducts');
+    let q: Query = productsRef;
+
+    if (vendorId) {
+      // Get vendor's salesProducts
+      const vendorRef = doc(this.firestore, `vendors/${vendorId}`);
+      const vendorSnap = await getDoc(vendorRef);
+      if (vendorSnap.exists()) {
+        const vendorData = vendorSnap.data();
+        const salesProducts = vendorData['salesProducts'] || [];
+
+        if (salesProducts.length === 0) {
+          return [];
+        }
+
+        // Query only the products in salesProducts array
+        q = query(productsRef, where('__name__', 'in', salesProducts));
+      }
+    }
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return [];
+    }
+
+    const products = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as (Product & { id: string })[];
+
+    // Sort products by soldCount and return just the IDs
+    return products
+      .sort((a, b) => (b['soldCount'] || 0) - (a['soldCount'] || 0))
+      .slice(0, 5)
+      .map(p => p.id);
   }
 }

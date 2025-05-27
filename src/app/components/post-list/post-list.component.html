@@ -7,18 +7,26 @@
     <div class="flex justify-content-between align-items-center">
       <h2 class="text-2xl font-bold m-0">Posts</h2>
       <div class="flex gap-3">
-        <div class="p-input-icon-left">
+        <!-- Search Input -->
+
+<p-iconfield>
+  <p-inputicon styleClass="pi pi-search" />
+  <input type="text" pInputText placeholder="Search posts..."  (input)="filterPosts($event)" />
+</p-iconfield>
+        <!-- <div class="p-input-icon-right">
           <i class="pi pi-search"></i>
-          <input pInputText type="text" placeholder="Search posts..." (input)="filterPosts($event)" class="p-inputtext-lg" />
-        </div>
+          <input pInputText type="text" (input)="filterPosts($event)" class="p-inputtext-lg" />
+        </div> -->
         <p-dropdown [options]="sortOptions" [(ngModel)]="selectedSort" placeholder="Sort by" (onChange)="sortPosts()" [style]="{'width':'200px'}"></p-dropdown>
       </div>
     </div>
     <div class="flex gap-3">
-      <p-button label="All" [outlined]="selectedFilter !== 'all'" (click)="filterByStatus('all')" class="p-button-sm"></p-button>
+      <p-button label="All ({{filteredPosts.length}})" [outlined]="selectedFilter !== 'all'" (click)="filterByStatus('all')" class="p-button-sm"></p-button>
       <p-button label="Most Viewed" [outlined]="selectedFilter !== 'views'" (click)="filterByStatus('views')" class="p-button-sm"></p-button>
       <p-button label="Most Liked" [outlined]="selectedFilter !== 'likes'" (click)="filterByStatus('likes')" class="p-button-sm"></p-button>
       <p-button label="Most Commented" [outlined]="selectedFilter !== 'comments'" (click)="filterByStatus('comments')" class="p-button-sm"></p-button>
+
+        <button pButton label="Add Post" icon="pi pi-plus" (click)="addPost()"></button>
     </div>
   </div>
 
@@ -33,7 +41,7 @@
   </div>
 
   <!-- Post Grid -->
-  <div *ngIf="!isLoading && !errorMessage" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 bg-gray-100">
+  <div *ngIf="!isLoading && !errorMessage" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 ">
     <p-card *ngFor="let item of filteredPosts; let i = index"
       [style]="{ width: '25rem', overflow: 'hidden' }"
       class="mx-auto mb-6">
@@ -67,9 +75,7 @@
   </div>
 
   <!-- Add Post Button -->
-  <div class="p-6">
-    <button pButton label="Add Post" icon="pi pi-plus" (click)="addPost()"></button>
-  </div>
+
 </div>
 
 <router-outlet></router-outlet>

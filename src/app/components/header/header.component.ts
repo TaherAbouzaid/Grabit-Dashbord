@@ -13,7 +13,7 @@ import { Router } from '@angular/router';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
   standalone: true,
-  imports: [CommonModule, RouterModule, AvatarModule, MenuModule]
+  imports: [CommonModule, RouterModule, AvatarModule, MenuModule],
 })
 export class HeaderComponent implements OnInit {
   userEmail: string | null = null;
@@ -26,39 +26,44 @@ export class HeaderComponent implements OnInit {
     private auth: Auth,
     private firestore: Firestore,
     private router: Router
-  ) { }
+  ) {}
+
+  async handleLogout() {
+    try {
+      await this.auth.signOut();
+      localStorage.removeItem('userUID');
+      this.router.navigate(['/']);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  }
 
   async ngOnInit() {
     this.menuItems = [
       {
         label: 'Profile',
         icon: 'pi pi-user',
-        routerLink: ['/dashboard/profile']
+        routerLink: ['/dashboard/profile'],
       },
       {
-        label: 'Settings',
-        icon: 'pi pi-cog',
-        routerLink: ['/dashboard/settings']
-      },
-      {
-        separator: true
+        separator: true,
       },
       {
         label: 'Logout',
         icon: 'pi pi-sign-out',
-        command: () => this.logout()
-      }
+        command: () => this.handleLogout(),
+      },
     ];
 
     this.auth.onAuthStateChanged(async (user) => {
       if (user) {
         this.userEmail = user.email;
         this.userImage = user.photoURL;
-        
+
         // Get user data from Firestore
         const userRef = doc(this.firestore, `users/${user.uid}`);
         const userSnap = await getDoc(userRef);
-        
+
         if (userSnap.exists()) {
           const userData = userSnap.data();
           this.userName = userData['fullName'] || '';

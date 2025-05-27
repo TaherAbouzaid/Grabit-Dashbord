@@ -28,6 +28,7 @@ export interface OrderItem {
   name: string;
   price: number;
   quantity: number;
+  variantAttributes?: Array<{ key: string; value: string }>;
 }
 
 export interface Order {

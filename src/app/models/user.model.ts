@@ -1,12 +1,12 @@
 import { Timestamp } from 'firebase/firestore';
 
 export type UserRole =
-  'main admin' |
-  'admin' |
-  'shop manager' |
-  'vendor' |
-  'Author' |
-  'customer';
+  | 'main admin'
+  | 'admin'
+  | 'shop manager'
+  | 'vendor'
+  | 'Author'
+  | 'customer';
 
 export interface Address {
   street: string;
@@ -20,7 +20,7 @@ export interface User {
   fullName: string;
   email: string;
   phone: string;
-  imageUrl: string;
+  profileImage: string;
   role: UserRole;
   address: Address[];
   wishlist: string[];

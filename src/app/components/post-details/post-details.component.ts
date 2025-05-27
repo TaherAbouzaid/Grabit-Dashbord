@@ -138,7 +138,7 @@ export class PostDetailsComponent implements OnInit {
                 const user = await firstValueFrom(this.userService.getUserById(userId));
                 this.userProfileCache[userId] = {
                   name: user?.fullName || 'Unknown User',
-                  photoURL: user?.imageUrl || 'assets/default-avatar.png'
+                  photoURL: user?.profileImage || 'assets/default-avatar.png',
                 };
               } catch {
                 this.userProfileCache[userId] = {

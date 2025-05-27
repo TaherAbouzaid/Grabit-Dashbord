@@ -21,7 +21,10 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DropdownModule } from 'primeng/dropdown';
-
+import { InputIcon } from 'primeng/inputicon';
+import { IconField } from 'primeng/iconfield';
+// import { InputTextModule } from 'primeng/inputtext';
+// import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-post-list',
   standalone: true,
@@ -36,7 +39,9 @@ import { DropdownModule } from 'primeng/dropdown';
     ToastModule,
     ConfirmDialogModule,
     DropdownModule,
-    RouterModule
+    RouterModule,
+    InputIcon,
+    IconField
   ],
   providers: [MessageService, ConfirmationService],
 })
@@ -89,7 +94,19 @@ export class PostListComponent implements OnInit {
 
   filterByStatus(status: string): void {
     this.selectedFilter = status;
-    this.applyFilters('');
+
+    if (status === 'all') {
+      this.filteredPosts = [...this.postsWithCommentsAndReplies];
+    } else if (status === 'views') {
+      this.filteredPosts = [...this.postsWithCommentsAndReplies]
+        .sort((a, b) => (b.post.views || 0) - (a.post.views || 0));
+    } else if (status === 'likes') {
+      this.filteredPosts = [...this.postsWithCommentsAndReplies]
+        .sort((a, b) => (b.post.likesCount || 0) - (a.post.likesCount || 0));
+    } else if (status === 'comments') {
+      this.filteredPosts = [...this.postsWithCommentsAndReplies]
+        .sort((a, b) => (b.comments.length || 0) - (a.comments.length || 0));
+    }
   }
 
   sortPosts(): void {
@@ -101,7 +118,7 @@ export class PostListComponent implements OnInit {
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter(item =>
         item.post.title.toLowerCase().includes(searchTerm) ||
         item.post.content.toLowerCase().includes(searchTerm) ||
         this.getAuthorName(item.post.authorId).toLowerCase().includes(searchTerm)
@@ -245,7 +262,7 @@ export class PostListComponent implements OnInit {
   }
 
   addPost(): void {
-    this.router.navigate(['/add-post']);
+    this.router.navigate(['/dashbord/add-post']);
   }
 
   deletePost(postId: string): void {

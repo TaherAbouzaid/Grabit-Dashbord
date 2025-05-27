@@ -24,15 +24,20 @@
   <ng-template pTemplate="body" let-user>
     <tr class="hover:bg-gray-50 transition duration-300 text-sm text-gray-700">
       <td class="p-4">
-        <input type="checkbox" [(ngModel)]="user.selected" class="checkbox"/>
+        <input type="checkbox" [(ngModel)]="user.selected" class="checkbox" />
       </td>
 
       <td class="p-4 flex items-center justify-start">
         <div class="image-container">
-          <img
-            [src]="user.imageUrl "
+          <p-avatar *ngIf="user.profileImage" [image]="user.profileImage" shape="circle" size="normal"></p-avatar>
+        <p-avatar *ngIf="!user.profileImage" icon="pi pi-user" shape="circle" size="normal"></p-avatar>
+          <!-- <img
+            [src]="
+              user.profileImage ||
+              'https://firebasestorage.googleapis.com/v0/b/cvcv-bc6f0.appspot.com/o/default%2Fblue-circle-with-white-user_78370-4707.avif?alt=media&token=01c540ab-e4d5-4d26-8101-167c2738d23b'
+            "
             alt="User Avatar"
-          />
+          /> -->
         </div>
       </td>
 
@@ -41,7 +46,10 @@
       <td class="p-4" pEditableColumn>
         <p-cellEditor>
           <ng-template pTemplate="input">
-            <input [(ngModel)]="user.fullName" class="p-inputtext p-component" />
+            <input
+              [(ngModel)]="user.fullName"
+              class="p-inputtext p-component"
+            />
           </ng-template>
           <ng-template pTemplate="output">
             {{ user.fullName }}
@@ -49,20 +57,11 @@
         </p-cellEditor>
       </td>
 
-
       <!-- <td class="p-4">{{ user.email }}</td> -->
 
-      <td class="p-4" pEditableColumn>
-        <p-cellEditor>
-          <ng-template pTemplate="input">
-            <input [(ngModel)]="user.email" class="p-inputtext p-component" />
-          </ng-template>
-          <ng-template pTemplate="output">
-            {{ user.email }}
-          </ng-template>
-        </p-cellEditor>
+      <td class="p-4">
+        {{ user.email }}
       </td>
-
 
       <!-- <td class="p-4">{{ user.phone || "N/A" }}</td> -->
 
@@ -77,7 +76,6 @@
         </p-cellEditor>
       </td> -->
 
-
       <!-- <td class="p-4">
         <select class="border rounded px-2 py-1 text-sm capitalize" [(ngModel)]="user.role">
           <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
@@ -87,8 +85,13 @@
       <td class="p-4" pEditableColumn>
         <p-cellEditor>
           <ng-template pTemplate="input">
-            <select class="border rounded px-2 py-1 text-sm capitalize" [(ngModel)]="user.role">
-              <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+            <select
+              class="border rounded px-2 py-1 text-sm capitalize"
+              [(ngModel)]="user.role"
+            >
+              <option *ngFor="let role of roles" [value]="role">
+                {{ role }}
+              </option>
             </select>
           </ng-template>
           <ng-template pTemplate="output">
@@ -96,7 +99,6 @@
           </ng-template>
         </p-cellEditor>
       </td>
-
 
       <!-- <td class="p-4">
         <ul class="list-disc list-inside space-y-1">
@@ -110,8 +112,6 @@
       <!-- <td class="p-4 text-center">
         <p-button label="Edit" (click)="editUser(user)"></p-button>
       </td> -->
-
-
     </tr>
   </ng-template>
 </p-table>
@@ -125,10 +125,9 @@
   </button>
 
   <button
-  class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg"
-  (click)="confirmDeleteSelected()"
->
-  Delete Selected
-</button>
-
+    class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg"
+    (click)="confirmDeleteSelected()"
+  >
+    Delete Selected
+  </button>
 </div>

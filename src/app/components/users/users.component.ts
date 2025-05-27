@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
+import { AvatarModule } from 'primeng/avatar';
 
 @Component({
   selector: 'app-users',
@@ -21,6 +22,7 @@ import { ConfirmationService } from 'primeng/api';
     ButtonModule,
     ToastModule,
     ConfirmDialogModule,
+    AvatarModule,
   ],
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.css'],

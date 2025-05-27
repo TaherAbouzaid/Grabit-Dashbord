@@ -147,6 +147,27 @@ export class ProductListComponent implements OnInit {
         if (product.productType === 'variant' && product.id) {
           product.variants = await this.productService.getVariantsForProduct(product.id);
         }
+
+        // Safely convert updatedAt to a JavaScript Date object
+        let updatedAtDate = null;
+        if (product.updatedAt) {
+          if (typeof product.updatedAt.toDate === 'function') {
+            // It's a Firestore Timestamp
+            updatedAtDate = product.updatedAt.toDate();
+          } else if (product.updatedAt instanceof Date) {
+            // It's already a Date object
+            updatedAtDate = product.updatedAt;
+          } else if (typeof product.updatedAt === 'string') {
+            // It's a string, try to parse it
+            updatedAtDate = new Date(product.updatedAt);
+          } else if (typeof product.updatedAt === 'number') {
+            // It's a timestamp in milliseconds
+            updatedAtDate = new Date(product.updatedAt);
+          }
+        }
+
+        console.log('Product:', product.title?.en, 'updatedAt:', updatedAtDate);
+
         return {
           ...product,
           name: product.title?.en || 'No title',
@@ -156,24 +177,24 @@ export class ProductListComponent implements OnInit {
           subCategoryId: product.subCategoryId?.subcategoryId || '',
           inventoryStatus: this.getStatus(product.quantity || 0),
           rating: product.ratingSummary?.average || 0,
-          updatedAt: product.updatedAt || null
+          updatedAt: updatedAtDate
         };
       }));
+
+      // Sort products by updatedAt in descending order (newest first)
+      this.products.sort((a, b) => {
+        if (!a.updatedAt) return 1;  // null dates go to the end
+        if (!b.updatedAt) return -1;
+        return b.updatedAt.getTime() - a.updatedAt.getTime();
+      });
+
+      console.log('All products with dates (after sorting):', this.products.map(p => ({
+        name: p.name,
+        updatedAt: p.updatedAt
+      })));
+
       this.cd.markForCheck();
     });
-
-    this.cols = [
-      { field: 'name', header: 'Name' },
-      { field: 'updatedAt', header: 'Last Update' },
-      { field: 'image', header: 'Image' },
-      { field: 'price', header: 'Price' },
-      { field: 'category', header: 'Category' },
-      { field: 'subCategory', header: 'Sub Category' },
-      { field: 'rating', header: 'Reviews' },
-      { field: 'inventoryStatus', header: 'Status' }
-    ];
-
-    this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
   }
 
   exportCSV() {

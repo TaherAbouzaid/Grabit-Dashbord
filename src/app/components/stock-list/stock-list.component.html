@@ -1,45 +1,78 @@
 <div class="card">
   <h2>Stock List</h2>
   <div class="flex gap-4 mb-4">
-    <input pInputText [(ngModel)]="filterText" placeholder="Search by product or variant name..." />
-    <select [(ngModel)]="filterType">
+    <input
+      pInputText
+      [(ngModel)]="filterText"
+      placeholder="Search by product or variant name..."
+    />
+    <select
+      [(ngModel)]="filterType"
+      class="border border-gray-400 rounded px-2 py-1"
+    >
       <option value="all">All</option>
       <option value="simple">Simple</option>
       <option value="variant">Variant</option>
     </select>
   </div>
-  <table class="table-auto w-full border">
+  <table class="table-auto w-full border border-collapse border-gray-300">
     <thead>
       <tr>
-        <th class="px-2 py-1 border">Product Name</th>
-        <th class="px-2 py-1 border">Variant Name</th>
+        <th class="px-2 py-1 border" style="max-width:280px;">Product Name</th>
         <th class="px-2 py-1 border">Image</th>
         <th class="px-2 py-1 border">Quantity</th>
-        <th class="px-2 py-1 border">Type</th>
+        <!-- <th class="px-2 py-1 border">Type</th> -->
         <th class="px-2 py-1 border">Attributes</th>
         <th class="px-2 py-1 border">Actions</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let row of filteredRows">
-        <td class="px-2 py-1 border">{{ row.productName }}</td>
-        <td class="px-2 py-1 border">{{ row.variantName }}</td>
         <td class="px-2 py-1 border">
-          <img *ngIf="row.image" [src]="row.image" alt="image" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px;" />
+          <div style="max-width: 280px; ">
+            {{ row.productName || row.variantName }}
+          </div>
+        </td>
+        <td class="px-2 py-1 border">
+          <img
+            *ngIf="row.image"
+            [src]="row.image"
+            alt="image"
+            style="
+              width: 48px;
+              height: 48px;
+              object-fit: cover;
+              border-radius: 6px;
+            "
+          />
         </td>
         <td class="px-2 py-1 border">{{ row.quantity }}</td>
-        <td class="px-2 py-1 border">{{ row.type }}</td>
+        <!-- <td class="px-2 py-1 border">{{ row.type }}</td> -->
         <td class="px-2 py-1 border">
-          <ng-container *ngIf="row.type === 'variant' && row.attributes?.length > 0; else noAttr">
+          <ng-container
+            *ngIf="
+              row.type === 'variant' && row.attributes?.length > 0;
+              else noAttr
+            "
+          >
             <div *ngFor="let attr of row.attributes">
               <span class="font-semibold">{{ attr.key }}:</span>
-              <span>{{ attr.value }}</span>
+              <span>{{ attr.value || row.type }}</span>
             </div>
           </ng-container>
-          <ng-template #noAttr>-</ng-template>
+          <ng-template #noAttr>
+            <span *ngIf="row.type === 'simple'">Simple</span>
+            <span *ngIf="row.type !== 'simple'">-</span>
+          </ng-template>
         </td>
         <td class="px-2 py-1 border">
-          <button pButton pRipple icon="pi pi-pencil" class="p-button-sm p-button-text" (click)="editProduct(row.productId)"></button>
+          <button
+            pButton
+            pRipple
+            icon="pi pi-pencil"
+            class="p-button-sm p-button-text"
+            (click)="editProduct(row.productId)"
+          ></button>
         </td>
       </tr>
       <tr *ngIf="filteredRows.length === 0">
@@ -48,4 +81,4 @@
     </tbody>
   </table>
   <div *ngIf="loading" class="text-center py-4">Loading...</div>
-</div> 
+</div>

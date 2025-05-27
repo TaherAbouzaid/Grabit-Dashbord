@@ -44,7 +44,7 @@ export class AddUserComponent {
     { label: 'Customer', value: 'customer' },
   ];
 
-  defaultImageUrl =
+  defaultprofileImage =
     'https://firebasestorage.googleapis.com/v0/b/cvcv-bc6f0.appspot.com/o/default%2Fblue-circle-with-white-user_78370-4707.avif?alt=media&token=01c540ab-e4d5-4d26-8101-167c2738d23b';
 
   constructor(
@@ -85,14 +85,14 @@ export class AddUserComponent {
 
     const formData = this.userForm.value;
     // const userId = Date.now().toString();
-    let imageUrl = this.defaultImageUrl;
+    let profileImage = this.defaultprofileImage;
 
     try {
       // if (this.selectedFile) {
       //   const filePath = `users/${userId}_${this.selectedFile.name}`;
       //   const storageRef = ref(this.storage, filePath);
       //   await uploadBytes(storageRef, this.selectedFile);
-      //   imageUrl = await getDownloadURL(storageRef);
+      //   profileImage = await getDownloadURL(storageRef);
       // }
 
       const uid = await this.userService.createUserByAdmin(
@@ -100,7 +100,7 @@ export class AddUserComponent {
         formData.password,
         formData.fullName,
         formData.role,
-        imageUrl
+        profileImage
       );
 
       this.messageService.add({

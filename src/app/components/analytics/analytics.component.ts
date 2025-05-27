@@ -124,24 +124,24 @@ export class AnalyticsComponent implements OnInit {
       // Load Sales Data directly from orders
       const ordersRef = collection(this.firestore, 'orders');
       let ordersQuery = query(ordersRef);
-      
+
       // Add vendor filter if not admin
       if (this.userRole !== 'admin') {
         ordersQuery = query(ordersRef, where('vendorId', '==', this.vendorId));
       }
-      
+
       const ordersSnapshot = await getDocs(ordersQuery);
       const orders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
-      
+
       // Filter valid orders
-      const validOrders = orders.filter(order => 
-        order.status !== 'cancelled' && 
+      const validOrders = orders.filter(order =>
+        order.status !== 'cancelled' &&
         order.paymentMethod !== 'cash'
       );
-      
+
       // Calculate total sales
       this.totalSales = validOrders.reduce((sum, order) => sum + Number(order.finalTotal || 0), 0);
-      
+
       // Calculate average order value
       this.averageOrderValue = validOrders.length > 0 ? this.totalSales / validOrders.length : 0;
 
@@ -179,20 +179,8 @@ export class AnalyticsComponent implements OnInit {
         ],
       };
 
-      // Load Top Products Data
-      const topProducts = await this.productService.getTopProducts(
-        this.userRole !== 'admin' ? this.vendorId : undefined
-      );
-      this.topProductsData = {
-        labels: topProducts.labels,
-        datasets: [
-          {
-            label: 'Sales',
-            data: topProducts.data,
-            backgroundColor: '#42A5F5',
-          },
-        ],
-      };
+      // Load Top Products Data with variants
+      await this.loadTopProductsData();
 
       // Load Inventory Status
       const inventoryStatus = await this.productService.getInventoryStatus(
@@ -218,20 +206,29 @@ export class AnalyticsComponent implements OnInit {
         10,
         this.userRole !== 'admin' ? this.vendorId : undefined
       );
-      this.trendingProducts = products.map((product) => ({
-        ...product,
-        trendingScore: Math.round(product.trendingScore || 0),
-        views: product.views || 0,
-        wishlistCount: product.wishlistCount || 0,
-        cartAdds: product.cartAdds || 0,
-        soldCount: product.soldCount || 0,
-        updatedAt: product.updatedAt?.toDate() || new Date(),
-        mainImage: product.mainImage || 'assets/images/no-image.png',
-        title: product.title || { en: 'No Title' },
+
+      // Load variants for each product
+      this.trendingProducts = await Promise.all(products.map(async (product) => {
+        // If product is variant type, load its variants
+        if (product.productType === 'variant' && product.id) {
+          product.variants = await this.productService.getVariantsForProduct(product.id);
+        }
+
+        return {
+          ...product,
+          trendingScore: Math.round(product.trendingScore || 0),
+          views: product.views || 0,
+          wishlistCount: product.wishlistCount || 0,
+          cartAdds: product.cartAdds || 0,
+          soldCount: product.soldCount || 0,
+          updatedAt: product.updatedAt?.toDate() || new Date(),
+          mainImage: product.productType === 'variant' && product.variants?.length > 0
+            ? product.variants[0]?.mainImage || product.mainImage || 'assets/images/no-image.png'
+            : product.mainImage || 'assets/images/no-image.png'
+        };
       }));
     } catch (error) {
       console.error('Error loading trending products:', error);
-      this.trendingProducts = [];
     }
   }
 
@@ -241,19 +238,19 @@ export class AnalyticsComponent implements OnInit {
       // Calculate average order value based on valid orders
       const ordersRef = collection(this.firestore, 'orders');
       let ordersQuery = query(ordersRef);
-      
+
       if (this.userRole !== 'admin') {
         ordersQuery = query(ordersRef, where('vendorId', '==', this.vendorId));
       }
-      
+
       const ordersSnapshot = await getDocs(ordersQuery);
       const orders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
-      
-      const validOrders = orders.filter(order => 
-        order.status !== 'cancelled' && 
+
+      const validOrders = orders.filter(order =>
+        order.status !== 'cancelled' &&
         order.paymentMethod !== 'cash'
       );
-      
+
       this.averageOrderValue = validOrders.length > 0 ? this.totalSales / validOrders.length : 0;
 
       // Load category details
@@ -304,5 +301,54 @@ export class AnalyticsComponent implements OnInit {
   async exportData() {
     // Implement data export logic here
     console.log('Exporting data...');
+  }
+
+  // Load Top Products Data
+  async loadTopProductsData() {
+    try {
+      // Get top product IDs first
+      const topProductIds = await this.productService.getTopProductIds(
+        this.userRole !== 'admin' ? this.vendorId : undefined
+      );
+
+      // Get full product data with variants
+      const topProductsWithVariants = await Promise.all(
+        topProductIds.map(async (productId) => {
+          const product = await this.productService.getProductById(productId);
+          if (product && product.productType === 'variant' && product.id) {
+            product.variants = await this.productService.getVariantsForProduct(product.id);
+          }
+          return product;
+        })
+      );
+
+      // Create labels and data arrays
+      const labels = topProductsWithVariants.map(product =>
+        product?.productType === 'variant' && product?.variants?.length > 0
+          ? product?.variants[0]?.title?.en || product?.title?.en
+          : product?.title?.en || 'Unknown'
+      );
+
+      const data = topProductsWithVariants.map(product => product?.soldCount || 0);
+
+      // Set the chart data
+      this.topProductsData = {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Sales',
+            data: data,
+            backgroundColor: '#42A5F5',
+          },
+        ],
+      };
+    } catch (error) {
+      console.error('Error loading top products data:', error);
+      // Set default empty data
+      this.topProductsData = {
+        labels: ['No Products'],
+        datasets: [{ label: 'Sales', data: [0], backgroundColor: '#42A5F5' }]
+      };
+    }
   }
 }

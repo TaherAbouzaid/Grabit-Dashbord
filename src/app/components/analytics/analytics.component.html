@@ -1,18 +1,18 @@
 <div class="grid">
     <!-- Date Range Filter -->
-    <div class="col-12">
+    <!-- <div class="col-12">
         <p-card>
             <div class="flex align-items-center gap-3">
                 <span class="p-input-icon-left">
                     <i class="pi pi-calendar"></i>
-                    <p-calendar [(ngModel)]="dateRange" selectionMode="range" [showButtonBar]="true" 
+                    <p-calendar [(ngModel)]="dateRange" selectionMode="range" [showButtonBar]="true"
                         placeholder="Select Date Range" styleClass="w-20rem"></p-calendar>
                 </span>
                 <p-button label="Apply Filter" icon="pi pi-filter" (onClick)="applyDateFilter()"></p-button>
                 <p-button label="Export Data" icon="pi pi-download" severity="secondary" (onClick)="exportData()"></p-button>
             </div>
         </p-card>
-    </div>
+    </div> -->
 
     <!-- Detailed Sales Analysis -->
     <div class="col-12 lg:col-6">
@@ -59,7 +59,7 @@
                             <td>{{category.products}}</td>
                             <td>{{category.sales | currency}}</td>
                             <td>
-                                <p-tag [value]="category.growth + '%'" 
+                                <p-tag [value]="category.growth + '%'"
                                     [severity]="category.growth > 0 ? 'success' : 'danger'">
                                 </p-tag>
                             </td>
@@ -74,7 +74,7 @@
     <div class="col-12 lg:col-6">
         <p-card header="Product Performance">
             <p-chart type="bar" [data]="topProductsData" [options]="chartOptions"></p-chart>
-            <div class="mt-4">
+            <!-- <div class="mt-4">
                 <h4>Product Details</h4>
                 <p-table [value]="productDetails" [tableStyle]="{'min-width': '50rem'}">
                     <ng-template pTemplate="header">
@@ -91,14 +91,14 @@
                             <td>{{product.revenue | currency}}</td>
                             <td>{{product.unitsSold}}</td>
                             <td>
-                                <p-tag [value]="product.profitMargin + '%'" 
+                                <p-tag [value]="product.profitMargin + '%'"
                                     [severity]="product.profitMargin > 20 ? 'success' : 'warning'">
                                 </p-tag>
                             </td>
                         </tr>
                     </ng-template>
                 </p-table>
-            </div>
+            </div> -->
         </p-card>
     </div>
 
@@ -151,7 +151,7 @@
                     <tr>
                         <td>
                             <div class="flex align-items-center gap-2">
-                                <img [src]="product.mainImage" [alt]="product.title?.en" 
+                                <img [src]="product.mainImage" [alt]="product.title?.en"
                                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
                                 <div class="flex flex-column">
                                     <span class="font-bold">{{product.title?.en}}</span>
@@ -160,7 +160,7 @@
                             </div>
                         </td>
                         <td>
-                            <p-tag [value]="product.trendingScore" 
+                            <p-tag [value]="product.trendingScore"
                                 [severity]="product.trendingScore > 100 ? 'success' : product.trendingScore > 50 ? 'info' : 'warning'">
                             </p-tag>
                         </td>
@@ -198,4 +198,4 @@
             </p-table>
         </p-card>
     </div>
-</div> 
+</div>
