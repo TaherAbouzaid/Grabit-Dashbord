@@ -24,11 +24,11 @@ import { Observable, switchMap, map, tap, catchError, of } from 'rxjs';
     TableModule,
     DropdownModule,
     FormsModule,
-    ToastModule
+    ToastModule,
   ],
   providers: [MessageService],
   templateUrl: './order-details.component.html',
-  styleUrl: './order-details.component.css'
+  styleUrl: './order-details.component.css',
 })
 export class OrderDetailsComponent implements OnInit {
   order$: Observable<OrderDisplay | null> = of(null);
@@ -39,7 +39,7 @@ export class OrderDetailsComponent implements OnInit {
     { label: 'Pending', value: 'pending' },
     { label: 'Shipped', value: 'shipped' },
     { label: 'Delivered', value: 'delivered' },
-    { label: 'Cancelled', value: 'cancelled' }
+    { label: 'Cancelled', value: 'cancelled' },
   ];
 
   constructor(
@@ -58,7 +58,7 @@ export class OrderDetailsComponent implements OnInit {
   private loadOrder(): void {
     this.loading = true;
     this.order$ = this.route.params.pipe(
-      switchMap(params => {
+      switchMap((params) => {
         const orderId = params['id'];
         console.log('Route params:', params); // Debug log
         if (!orderId) {
@@ -68,18 +68,18 @@ export class OrderDetailsComponent implements OnInit {
         }
         console.log('Loading order with ID:', orderId); // Debug log
         return this.orderService.getOrderById(orderId).pipe(
-          tap(order => {
+          tap((order) => {
             console.log('Raw order data from service:', order); // Debug log
             if (!order) {
               console.log('No order data received from service'); // Debug log
             }
           }),
-          catchError(error => {
+          catchError((error) => {
             console.error('Error loading order:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'خطأ',
-              detail: 'فشل في تحميل بيانات الطلب'
+              detail: 'فشل في تحميل بيانات الطلب',
             });
             return of(null);
           })
@@ -105,9 +105,9 @@ export class OrderDetailsComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'خطأ',
-          detail: 'حدث خطأ أثناء تحميل بيانات الطلب'
+          detail: 'حدث خطأ أثناء تحميل بيانات الطلب',
         });
-      }
+      },
     });
   }
 
@@ -138,7 +138,7 @@ export class OrderDetailsComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'نجاح',
-          detail: 'تم تحديث حالة الطلب بنجاح'
+          detail: 'تم تحديث حالة الطلب بنجاح',
         });
         if (this.order) {
           this.order.status = status;
@@ -151,13 +151,13 @@ export class OrderDetailsComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'خطأ',
-          detail: 'فشل في تحديث حالة الطلب'
+          detail: 'فشل في تحديث حالة الطلب',
         });
-      }
+      },
     });
   }
 
   goBack(): void {
-    this.router.navigate(['/dashbord/orders']);
+    this.router.navigate(['/dashboard/orders']);
   }
 }
