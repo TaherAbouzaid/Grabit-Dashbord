@@ -15,6 +15,7 @@
       <th class="p-4 text-left">Email</th>
       <!-- <th class="p-4 text-left">Phone</th> -->
       <th class="p-4 text-left">Role</th>
+      <th class="p-4 text-left">ID</th>
       <!-- <th class="p-4 text-left">Address</th> -->
       <!-- <th class="p-4 text-center">Wishlist Count</th> -->
       <!-- <th class="p-4 text-center">Edit</th> -->
@@ -31,17 +32,8 @@
         <div class="image-container">
           <p-avatar *ngIf="user.profileImage" [image]="user.profileImage" shape="circle" size="normal"></p-avatar>
         <p-avatar *ngIf="!user.profileImage" icon="pi pi-user" shape="circle" size="normal"></p-avatar>
-          <!-- <img
-            [src]="
-              user.profileImage ||
-              'https://firebasestorage.googleapis.com/v0/b/cvcv-bc6f0.appspot.com/o/default%2Fblue-circle-with-white-user_78370-4707.avif?alt=media&token=01c540ab-e4d5-4d26-8101-167c2738d23b'
-            "
-            alt="User Avatar"
-          /> -->
         </div>
       </td>
-
-      <!-- <td class="p-4">{{ user.name }}</td> -->
 
       <td class="p-4" pEditableColumn>
         <p-cellEditor>
@@ -57,30 +49,9 @@
         </p-cellEditor>
       </td>
 
-      <!-- <td class="p-4">{{ user.email }}</td> -->
-
       <td class="p-4">
         {{ user.email }}
       </td>
-
-      <!-- <td class="p-4">{{ user.phone || "N/A" }}</td> -->
-
-      <!-- <td class="p-4" pEditableColumn>
-        <p-cellEditor>
-          <ng-template pTemplate="input">
-            <input [(ngModel)]="user.phone" class="p-inputtext p-component" />
-          </ng-template>
-          <ng-template pTemplate="output">
-            {{ user.phone }}
-          </ng-template>
-        </p-cellEditor>
-      </td> -->
-
-      <!-- <td class="p-4">
-        <select class="border rounded px-2 py-1 text-sm capitalize" [(ngModel)]="user.role">
-          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
-        </select>
-      </td> -->
 
       <td class="p-4" pEditableColumn>
         <p-cellEditor>
@@ -100,18 +71,9 @@
         </p-cellEditor>
       </td>
 
-      <!-- <td class="p-4">
-        <ul class="list-disc list-inside space-y-1">
-          <li *ngFor="let address of user.address">{{ address }}</li>
-        </ul>
-      </td> -->
-
-      <!-- <td class="p-4 text-center font-bold text-indigo-600">
-        {{ user.wishlist.length }}
-      </td> -->
-      <!-- <td class="p-4 text-center">
-        <p-button label="Edit" (click)="editUser(user)"></p-button>
-      </td> -->
+      <td class="p-4">
+        {{ user.userId }}
+      </td>
     </tr>
   </ng-template>
 </p-table>

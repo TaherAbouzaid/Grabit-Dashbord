@@ -529,8 +529,8 @@ export class AddProductComponent implements OnInit {
       if (!file) {
         this.messageService.add({
           severity: 'error',
-          summary: 'خطأ',
-          detail: 'لم يتم اختيار ملف',
+          summary: 'error',
+          detail: 'error selecting file',
         });
         return;
       }
@@ -539,8 +539,8 @@ export class AddProductComponent implements OnInit {
       if (file.size > 5 * 1024 * 1024) {
         this.messageService.add({
           severity: 'error',
-          summary: 'خطأ',
-          detail: 'حجم الملف كبير جداً. الحد الأقصى هو 5 ميجابايت',
+          summary: 'error',
+          detail: 'error ',
         });
         return;
       }
@@ -549,16 +549,16 @@ export class AddProductComponent implements OnInit {
       if (!file.type.startsWith('image/')) {
         this.messageService.add({
           severity: 'error',
-          summary: 'خطأ',
-          detail: 'يُسمح فقط بملفات الصور',
+          summary: 'error',
+          detail: 'error up',
         });
         return;
       }
 
       this.messageService.add({
         severity: 'info',
-        summary: 'جاري الرفع',
-        detail: 'جاري رفع الصورة...',
+        summary: 'uploading',
+        detail: 'uploading image...',
       });
 
       const path = `products/${Date.now()}_${file.name}`;
@@ -573,8 +573,8 @@ export class AddProductComponent implements OnInit {
 
       this.messageService.add({
         severity: 'success',
-        summary: 'تم الرفع',
-        detail: 'تم رفع الصورة بنجاح',
+        summary: 'uploaded',
+        detail: 'uploaded successfully',
       });
 
       // Reset the file input
@@ -583,8 +583,8 @@ export class AddProductComponent implements OnInit {
       console.error('Error uploading image:', error);
       this.messageService.add({
         severity: 'error',
-        summary: 'خطأ',
-        detail: 'فشل في رفع الصورة. يرجى المحاولة مرة أخرى',
+        summary: 'error',
+        detail: '',
       });
     }
   }

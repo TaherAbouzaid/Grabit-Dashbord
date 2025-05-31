@@ -16,11 +16,12 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextarea } from 'primeng/inputtextarea';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 import { map, firstValueFrom } from 'rxjs';
 import { Auth } from '@angular/fire/auth';
 import { AvatarModule } from 'primeng/avatar';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-post-details',
@@ -37,9 +38,10 @@ import { AvatarModule } from 'primeng/avatar';
     InputTextarea,
     ToastModule,
     FormsModule,
-    AvatarModule
+    AvatarModule,
+    ConfirmDialogModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
 })
 export class PostDetailsComponent implements OnInit {
   post: Post | null = null;
@@ -58,6 +60,7 @@ export class PostDetailsComponent implements OnInit {
   newReplyContent = '';
   replyingToComment: Comment | null = null;
   private userProfileCache: { [key: string]: { name: string; photoURL: string } } = {};
+  private userAdminStatus: { [key: string]: boolean } = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -67,6 +70,7 @@ export class PostDetailsComponent implements OnInit {
     private replyService: ReplyService,
     private userService: UserService,
     private messageService: MessageService,
+    private confirmationService: ConfirmationService,
     public auth: Auth
   ) {}
 
@@ -223,25 +227,54 @@ export class PostDetailsComponent implements OnInit {
   }
 
   async deleteComment(commentId: string): Promise<void> {
-    if (confirm('Are you sure you want to delete this comment?')) {
-      try {
-        await this.commentService.deleteComment(commentId, this.post?.postId || '');
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Comment deleted successfully'
-        });
-        if (this.post) {
-          await this.loadCommentsAndReplies(this.post.postId);
-        }
-      } catch (error) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to delete comment'
-        });
-      }
+    // Find the comment to check ownership
+    const commentToDelete = this.commentsWithReplies.find(item =>
+      item.comment.commentId === commentId
+    )?.comment;
+
+    if (!commentToDelete) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Comment not found'
+      });
+      return;
     }
+
+    const currentUser = this.auth.currentUser;
+    if (!currentUser) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'You must be logged in to delete comments'
+      });
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to delete this comment?',
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        try {
+          await this.commentService.deleteComment(commentId, this.post?.postId || '');
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Comment deleted successfully'
+          });
+          if (this.post) {
+            await this.loadCommentsAndReplies(this.post.postId);
+          }
+        } catch (error) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to delete comment'
+          });
+        }
+      }
+    });
   }
 
   editReply(reply: Reply): void {
@@ -278,25 +311,59 @@ export class PostDetailsComponent implements OnInit {
   }
 
   async deleteReply(replyId: string): Promise<void> {
-    if (confirm('Are you sure you want to delete this reply?')) {
-      try {
-        await this.replyService.deleteReply(replyId, this.post?.postId || '');
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Reply deleted successfully'
-        });
-        if (this.post) {
-          await this.loadCommentsAndReplies(this.post.postId);
-        }
-      } catch (error) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to delete reply'
-        });
-      }
+    // Find the reply to check ownership
+    const replyToDelete = this.commentsWithReplies
+      .flatMap(item => item.replies)
+      .find(reply => reply.replyId === replyId);
+
+    if (!replyToDelete) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Reply not found'
+      });
+      return;
     }
+
+    const currentUser = this.auth.currentUser;
+    if (!currentUser) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'You must be logged in to delete replies'
+      });
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to delete this reply?',
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        try {
+          // Find the parent comment ID
+          const parentComment = this.commentsWithReplies.find(item =>
+            item.replies.some(reply => reply.replyId === replyId)
+          )?.comment;
+
+          await this.replyService.deleteReply(replyId, parentComment?.commentId || '');
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Reply deleted successfully'
+          });
+          if (this.post) {
+            await this.loadCommentsAndReplies(this.post.postId);
+          }
+        } catch (error) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to delete reply'
+          });
+        }
+      }
+    });
   }
 
   goBack(): void {
@@ -485,5 +552,24 @@ export class PostDetailsComponent implements OnInit {
   isPostLiked(): boolean {
     if (!this.post || !this.auth.currentUser) return false;
     return this.post.likedBy?.includes(this.auth.currentUser.uid) || false;
+  }
+
+  isUserAdminOrAuthor(userId: string | undefined): boolean {
+    if (!userId) return false;
+
+    // If we've already checked this user, return cached result
+    if (this.userAdminStatus[userId] !== undefined) {
+      return this.userAdminStatus[userId];
+    }
+
+    // If not checked yet, default to false and check asynchronously
+    this.userAdminStatus[userId] = false;
+
+    // Check admin or author status asynchronously
+    this.userService.getUserById(userId).subscribe(user => {
+      this.userAdminStatus[userId] = user?.role === 'admin' || user?.role === 'Author';
+    });
+
+    return this.userAdminStatus[userId];
   }
 }

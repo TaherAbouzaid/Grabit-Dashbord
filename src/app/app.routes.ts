@@ -23,7 +23,7 @@ import { StockListComponent } from './components/stock-list/stock-list.component
 export const routes: Routes = [
   {
     path: '',
-    component: LoginComponent
+    component: LoginComponent,
   },
   {
     path: 'dashboard',
@@ -35,108 +35,108 @@ export const routes: Routes = [
         path: '',
         component: DashboardComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager', 'vendor', 'Author'] }
+        data: { roles: ['admin', 'shop manager', 'vendor', 'Author'] },
       },
       {
         path: 'profile',
         component: UserProfileComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager', 'vendor', 'Author'] }
+        data: { roles: ['admin', 'shop manager', 'vendor', 'Author'] },
       },
       {
         path: 'products',
         component: ProductListComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager', 'vendor'] }
+        data: { roles: ['admin', 'shop manager', 'vendor'] },
       },
       {
         path: 'orders/:id',
         component: OrderDetailsComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager'] }
+        data: { roles: ['admin', 'shop manager'] },
       },
       {
         path: 'add-product',
         component: AddProductComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager', 'vendor'] }
+        data: { roles: ['admin', 'shop manager', 'vendor'] },
       },
       {
         path: 'users',
         component: UsersComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin'] }
+        data: { roles: ['admin'] },
       },
       {
         path: 'add-user',
         component: AddUserComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin'] }
+        data: { roles: ['admin'] },
       },
       {
         path: 'brand',
         component: BrandComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager'] }
+        data: { roles: ['admin', 'shop manager'] },
       },
       {
         path: 'category',
         component: CategoryComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager'] }
+        data: { roles: ['admin', 'shop manager'] },
       },
       {
         path: 'products/edit/:id',
         component: AddProductComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager', 'vendor'] }
+        data: { roles: ['admin', 'shop manager', 'vendor'] },
       },
       {
         path: 'orders',
         component: OrderListComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager'] }
+        data: { roles: ['admin', 'shop manager'] },
       },
       {
         path: 'stock',
         component: StockListComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager'] }
+        data: { roles: ['admin', 'shop manager'] },
       },
 
       {
         path: 'list-posts',
         component: PostListComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'Author'] }
+        data: { roles: ['admin', 'Author'] },
       },
       {
         path: 'post-details/:postId',
         component: PostDetailsComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'Author'] }
+        data: { roles: ['admin', 'Author'] },
       },
       {
         path: 'comment-list',
         component: CommentListComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'Author'] }
+        data: { roles: ['admin', 'Author'] },
       },
       {
         path: 'add-post',
         component: AddPostComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'Author'] }
+        data: { roles: ['admin', 'Author'] },
       },
       {
         path: 'analytics',
         component: AnalyticsComponent,
         canActivate: [AuthGuard],
-        data: { roles: ['admin', 'shop manager', 'vendor'] }
-      }
-    ]
+        data: { roles: ['admin', 'shop manager', 'vendor'] },
+      },
+    ],
   },
   { path: 'unauthorized', component: UnauthorizedComponent },
   { path: '404', component: NotFoundComponent },
-  { path: '**', redirectTo: '404' }
+  { path: '**', redirectTo: '404' },
 ];

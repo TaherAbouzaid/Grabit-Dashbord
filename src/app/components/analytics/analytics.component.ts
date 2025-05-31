@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewChecked, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChartModule } from 'primeng/chart';
 import { CardModule } from 'primeng/card';
@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../services/Product/product.service';
 import { Auth } from '@angular/fire/auth';
 import { Firestore, doc, getDoc, collection, query, where, getDocs } from '@angular/fire/firestore';
+import { Subject, timer } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 interface Order {
   id: string;
@@ -17,6 +19,8 @@ interface Order {
   paymentMethod: string;
   finalTotal: number;
   vendorId?: string;
+  createdAt?: any; // Add createdAt property
+  updatedAt?: any; // Add updatedAt property for completeness
 }
 
 @Component({
@@ -45,7 +49,14 @@ interface Order {
     `,
   ],
 })
-export class AnalyticsComponent implements OnInit {
+export class AnalyticsComponent implements OnInit, OnDestroy {
+  // Add destroy subject for cleanup
+  private destroy$ = new Subject<void>();
+
+  // Chart visibility flags
+  showProductChart = false;
+  chartDataReady = false;
+
   salesData: any;
   categoryData: any;
   topProductsData: any;
@@ -65,45 +76,114 @@ export class AnalyticsComponent implements OnInit {
   outOfStockCount: number = 0;
   inventoryValue: number = 0;
 
+  // Create separate chart options for different chart types
+  lineChartOptions: any;
+  pieChartOptions: any;
+  barChartOptions: any;
+
+  @ViewChild('productChart') productChart: any;
+
+  private dataLoaded = false;
+
   constructor(
     private productService: ProductService,
     private auth: Auth,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private cdr: ChangeDetectorRef
   ) {
-    this.chartOptions = {
+    this.initChartOptions();
+  }
+
+  ngOnInit() {
+    // Initialize with empty data
+    this.initializeEmptyChartData();
+
+    // Load data
+    this.loadUserData().then(() => {
+      this.loadAnalyticsData();
+      this.loadTrendingProducts();
+      this.loadDetailedAnalytics();
+      this.loadTopProductsData();
+    });
+  }
+
+  initChartOptions() {
+    // Line chart options
+    this.lineChartOptions = {
       plugins: {
         legend: {
           labels: {
-            color: '#495057',
-          },
-        },
+            color: '#495057'
+          }
+        }
       },
       scales: {
         x: {
           ticks: {
-            color: '#495057',
+            color: '#495057'
           },
           grid: {
-            color: '#ebedef',
-          },
+            color: '#ebedef'
+          }
         },
         y: {
           ticks: {
-            color: '#495057',
+            color: '#495057'
           },
           grid: {
-            color: '#ebedef',
-          },
-        },
+            color: '#ebedef'
+          }
+        }
+      }
+    };
+
+    // Pie chart options
+    this.pieChartOptions = {
+      plugins: {
+        legend: {
+          labels: {
+            color: '#495057'
+          }
+        }
+      }
+    };
+
+    // Bar chart options
+    this.barChartOptions = {
+      plugins: {
+        legend: {
+          labels: {
+            color: '#495057'
+          }
+        }
       },
+      scales: {
+        x: {
+          ticks: {
+            color: '#495057'
+          },
+          grid: {
+            color: '#ebedef'
+          }
+        },
+        y: {
+          ticks: {
+            color: '#495057'
+          },
+          grid: {
+            color: '#ebedef'
+          }
+        }
+      }
     };
   }
 
-  async ngOnInit() {
-    await this.loadUserData();
-    await this.loadAnalyticsData();
-    await this.loadTrendingProducts();
-    await this.loadDetailedAnalytics();
+  // Initialize empty chart data
+  private initializeEmptyChartData() {
+    this.topProductsData = {
+      labels: ['Loading...'],
+      datasets: [{ label: 'Sales', data: [0], backgroundColor: '#42A5F5' }]
+    };
   }
 
   async loadUserData() {
@@ -126,7 +206,7 @@ export class AnalyticsComponent implements OnInit {
       let ordersQuery = query(ordersRef);
 
       // Add vendor filter if not admin
-      if (this.userRole !== 'admin') {
+      if (this.userRole !== 'admin' && this.userRole !== 'shop manager') {
         ordersQuery = query(ordersRef, where('vendorId', '==', this.vendorId));
       }
 
@@ -145,23 +225,41 @@ export class AnalyticsComponent implements OnInit {
       // Calculate average order value
       this.averageOrderValue = validOrders.length > 0 ? this.totalSales / validOrders.length : 0;
 
-      // Prepare sales data for chart
+      // Get last 6 months for sales data
+      const months = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        return date.toLocaleString('default', { month: 'short' });
+      }).reverse();
+
+      // Calculate sales per month
+      const salesByMonth = months.map(month => {
+        const monthOrders = validOrders.filter(order => {
+          const orderDate = order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
+          return orderDate && orderDate.toLocaleString('default', { month: 'short' }) === month;
+        });
+
+        return monthOrders.reduce((sum, order) => sum + Number(order.finalTotal || 0), 0);
+      });
+
+      // Prepare sales data for chart with monthly data
       this.salesData = {
-        labels: ['Total Sales'],
+        labels: months,
         datasets: [
           {
-            label: 'Sales',
-            data: [this.totalSales],
+            label: 'Monthly Sales',
+            data: salesByMonth,
             fill: false,
             borderColor: '#42A5F5',
             tension: 0.4,
-          },
+            backgroundColor: '#42A5F5',
+          }
         ],
       };
 
       // Load Category Data
       const categoryAnalytics = await this.productService.getCategoryAnalytics(
-        this.userRole !== 'admin' ? this.vendorId : undefined
+        this.userRole !== 'admin' && this.userRole !== 'shop manager' ? this.vendorId : undefined
       );
       this.categoryData = {
         labels: categoryAnalytics.labels,
@@ -184,7 +282,7 @@ export class AnalyticsComponent implements OnInit {
 
       // Load Inventory Status
       const inventoryStatus = await this.productService.getInventoryStatus(
-        this.userRole !== 'admin' ? this.vendorId : undefined
+        this.userRole !== 'admin' && this.userRole !== 'shop manager' ? this.vendorId : undefined
       );
       this.inventoryData = {
         labels: inventoryStatus.labels,
@@ -204,7 +302,7 @@ export class AnalyticsComponent implements OnInit {
     try {
       const products = await this.productService.getTrendingProducts(
         10,
-        this.userRole !== 'admin' ? this.vendorId : undefined
+        this.userRole !== 'admin' && this.userRole !== 'shop manager' ? this.vendorId : undefined
       );
 
       // Load variants for each product
@@ -212,16 +310,24 @@ export class AnalyticsComponent implements OnInit {
         // If product is variant type, load its variants
         if (product.productType === 'variant' && product.id) {
           product.variants = await this.productService.getVariantsForProduct(product.id);
+
+          // Use variant title if available
+          if (product.variants && product.variants.length > 0) {
+            (product as any).displayTitle = product.variants[0].title?.en || product.title?.en || 'Unknown';
+          }
+        } else {
+          (product as any).displayTitle = product.title?.en || 'Unknown';
         }
 
         return {
           ...product,
+          displayTitle: (product as any).displayTitle || product.title?.en || 'Unknown',
           trendingScore: Math.round(product.trendingScore || 0),
           views: product.views || 0,
           wishlistCount: product.wishlistCount || 0,
           cartAdds: product.cartAdds || 0,
           soldCount: product.soldCount || 0,
-          updatedAt: product.updatedAt?.toDate() || new Date(),
+          updatedAt: this.convertToDate(product.updatedAt),
           mainImage: product.productType === 'variant' && product.variants?.length > 0
             ? product.variants[0]?.mainImage || product.mainImage || 'assets/images/no-image.png'
             : product.mainImage || 'assets/images/no-image.png'
@@ -239,7 +345,7 @@ export class AnalyticsComponent implements OnInit {
       const ordersRef = collection(this.firestore, 'orders');
       let ordersQuery = query(ordersRef);
 
-      if (this.userRole !== 'admin') {
+      if (this.userRole !== 'admin' && this.userRole !== 'shop manager') {
         ordersQuery = query(ordersRef, where('vendorId', '==', this.vendorId));
       }
 
@@ -255,7 +361,7 @@ export class AnalyticsComponent implements OnInit {
 
       // Load category details
       const categoryData = await this.productService.getCategoryAnalytics(
-        this.userRole !== 'admin' ? this.vendorId : undefined
+        this.userRole !== 'admin' && this.userRole !== 'shop manager' ? this.vendorId : undefined
       );
       this.categoryDetails = categoryData.labels.map(
         (label: string, index: number) => ({
@@ -306,49 +412,128 @@ export class AnalyticsComponent implements OnInit {
   // Load Top Products Data
   async loadTopProductsData() {
     try {
-      // Get top product IDs first
+      console.log('Loading top products data...');
+
+      // Hide chart while loading
+      this.showProductChart = false;
+      this.chartDataReady = false;
+
+      // Get top product IDs
       const topProductIds = await this.productService.getTopProductIds(
-        this.userRole !== 'admin' ? this.vendorId : undefined
+        this.userRole !== 'admin' && this.userRole !== 'shop manager' ? this.vendorId : undefined
       );
 
-      // Get full product data with variants
-      const topProductsWithVariants = await Promise.all(
-        topProductIds.map(async (productId) => {
-          const product = await this.productService.getProductById(productId);
-          if (product && product.productType === 'variant' && product.id) {
-            product.variants = await this.productService.getVariantsForProduct(product.id);
-          }
-          return product;
-        })
-      );
+      if (topProductIds.length === 0) {
+        console.log('No top products found');
+        this.topProductsData = {
+          labels: ['No Products'],
+          datasets: [{ label: 'Sales', data: [0], backgroundColor: '#42A5F5' }]
+        };
+      } else {
+        // Get product details
+        const topProductsWithVariants = await Promise.all(
+          topProductIds.map(async (productId) => {
+            const product = await this.productService.getProductById(productId);
+            if (product && product.productType === 'variant' && product.id) {
+              product.variants = await this.productService.getVariantsForProduct(product.id);
+            }
+            return product;
+          })
+        );
 
-      // Create labels and data arrays
-      const labels = topProductsWithVariants.map(product =>
-        product?.productType === 'variant' && product?.variants?.length > 0
-          ? product?.variants[0]?.title?.en || product?.title?.en
-          : product?.title?.en || 'Unknown'
-      );
+        // Create labels and data
+        const labels = topProductsWithVariants.map(product =>
+          product?.productType === 'variant' && product?.variants?.length > 0
+            ? (product?.variants[0]?.title?.en || product?.title?.en || 'Unknown').substring(0, 20) + '...'
+            : (product?.title?.en || 'Unknown').substring(0, 20) + '...'
+        );
 
-      const data = topProductsWithVariants.map(product => product?.soldCount || 0);
+        const data = topProductsWithVariants.map(product => product?.soldCount || 0);
 
-      // Set the chart data
-      this.topProductsData = {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Sales',
-            data: data,
-            backgroundColor: '#42A5F5',
-          },
-        ],
-      };
+        // Set chart data
+        this.topProductsData = {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Sales',
+              data: data,
+              backgroundColor: '#42A5F5',
+            },
+          ],
+        };
+      }
+
+      // Set data ready flag
+      this.chartDataReady = true;
+
+      // Use timer to delay showing the chart
+      timer(500)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.showProductChart = true;
+          this.cdr.detectChanges();
+        });
+
     } catch (error) {
       console.error('Error loading top products data:', error);
-      // Set default empty data
       this.topProductsData = {
-        labels: ['No Products'],
+        labels: ['Error'],
         datasets: [{ label: 'Sales', data: [0], backgroundColor: '#42A5F5' }]
       };
+
+      // Set data ready flag even on error
+      this.chartDataReady = true;
+
+      // Use timer to delay showing the chart
+      timer(500)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.showProductChart = true;
+          this.cdr.detectChanges();
+        });
     }
+  }
+
+  // Helper method to convert various date formats to Date object
+  private convertToDate(dateValue: any): Date {
+    if (!dateValue) {
+      return new Date();
+    }
+
+    if (typeof dateValue.toDate === 'function') {
+      // It's a Firestore Timestamp
+      return dateValue.toDate();
+    }
+
+    if (dateValue instanceof Date) {
+      // It's already a Date object
+      return dateValue;
+    }
+
+    if (typeof dateValue === 'string' || typeof dateValue === 'number') {
+      // It's a string or number that can be parsed to Date
+      try {
+        return new Date(dateValue);
+      } catch (e) {
+        console.error('Error converting to date:', e);
+        return new Date();
+      }
+    }
+
+    // Default fallback
+    return new Date();
+  }
+
+  // Add this method to update charts after view changes
+  ngAfterViewChecked() {
+    if (this.dataLoaded && this.productChart && this.productChart.chart) {
+      this.productChart.chart.update();
+    }
+  }
+
+  ngOnDestroy() {
+    // Complete the destroy subject
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

@@ -40,12 +40,12 @@ export class AddUserComponent {
     { label: 'Admin', value: 'admin' },
     { label: 'Shop Manager', value: 'shop manager' },
     { label: 'Vendor', value: 'vendor' },
-    { label: 'Author', value: 'author' },
+    { label: 'Author', value: 'Author' },
     { label: 'Customer', value: 'customer' },
   ];
 
   defaultprofileImage =
-    'https://firebasestorage.googleapis.com/v0/b/cvcv-bc6f0.appspot.com/o/default%2Fblue-circle-with-white-user_78370-4707.avif?alt=media&token=01c540ab-e4d5-4d26-8101-167c2738d23b';
+    'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
   constructor(
     private fb: FormBuilder,

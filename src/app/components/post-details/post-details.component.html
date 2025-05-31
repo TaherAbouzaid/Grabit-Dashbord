@@ -21,8 +21,8 @@
     <p-card>
       <ng-template pTemplate="header">
         <div class="post-image-container">
-          <img [src]="post.image || 'https://images.pexels.com/photos/31067936/pexels-photo-31067936/free-photo-of-minimalist-architectural-white-wall-with-blue-sky.jpeg'" 
-               [alt]="post.title" 
+          <img [src]="post.image || 'https://images.pexels.com/photos/31067936/pexels-photo-31067936/free-photo-of-minimalist-architectural-white-wall-with-blue-sky.jpeg'"
+               [alt]="post.title"
                class="post-image" />
         </div>
       </ng-template>
@@ -39,9 +39,9 @@
         <div class="flex align-items-center gap-4 text-sm text-gray-500">
           <span><i class="pi pi-calendar mr-1"></i> {{ post.createdAt.toDate() | date:'medium' }}</span>
           <span *ngIf="post.updatedAt"><i class="pi pi-refresh mr-1"></i> Updated: {{ post.updatedAt.toDate() | date:'medium' }}</span>
-          <button pButton 
-                  [icon]="isPostLiked() ? 'pi pi-heart-fill' : 'pi pi-heart'" 
-                  class="p-button-rounded p-button-text" 
+          <button pButton
+                  [icon]="isPostLiked() ? 'pi pi-heart-fill' : 'pi pi-heart'"
+                  class="p-button-rounded p-button-text"
                   [class.text-red-500]="isPostLiked()"
                   (click)="likePost()">
           </button>
@@ -74,11 +74,16 @@
     <!-- Comments Section -->
     <div class="comments-section" *ngIf="post">
       <h3>Comments</h3>
-      
+
       <!-- New Comment Form -->
       <div class="new-comment">
         <div class="comment-input">
-          <p-avatar [image]="getUserProfile(auth.currentUser?.uid || '').photoURL" shape="circle" size="normal"></p-avatar>
+          <p-avatar [image]="getUserProfile(auth.currentUser?.uid || '').photoURL || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'"
+                    icon="pi pi-user"
+                    [styleClass]="getUserProfile(auth.currentUser?.uid || '').photoURL ? '' : 'default-avatar'"
+                    shape="circle"
+                    size="normal">
+          </p-avatar>
           <textarea pInputTextarea [(ngModel)]="newCommentContent" placeholder="Write a comment..." rows="3"></textarea>
         </div>
         <button pButton label="Comment" (click)="addComment()" [disabled]="!newCommentContent.trim()"></button>
@@ -98,15 +103,18 @@
             <p>{{ item.comment.content }}</p>
           </div>
           <div class="comment-actions">
-            <button pButton [icon]="isCommentLiked(item.comment) ? 'pi pi-heart-fill' : 'pi pi-heart'" 
+            <button pButton [icon]="isCommentLiked(item.comment) ? 'pi pi-heart-fill' : 'pi pi-heart'"
                     [class.p-button-danger]="isCommentLiked(item.comment)"
-                    (click)="likeComment(item.comment)" 
+                    (click)="likeComment(item.comment)"
                     class="p-button-text">
               {{ item.comment.likesCount }}
             </button>
             <button pButton label="Reply" (click)="startReply(item.comment)" class="p-button-text"></button>
             <button *ngIf="auth.currentUser?.uid === item.comment.userId" pButton label="Edit" (click)="editComment(item.comment)" class="p-button-text"></button>
-            <button *ngIf="auth.currentUser?.uid === item.comment.userId" pButton label="Delete" (click)="deleteComment(item.comment.commentId)" class="p-button-text p-button-danger"></button>
+            <button *ngIf="auth.currentUser?.uid === item.comment.userId || auth.currentUser?.uid === post?.authorId || isUserAdminOrAuthor(auth.currentUser?.uid)"
+                    pButton label="Delete"
+                    (click)="deleteComment(item.comment.commentId)"
+                    class="p-button-text p-button-danger"></button>
           </div>
 
           <!-- Reply Form -->
@@ -135,14 +143,17 @@
                 <p>{{ reply.content }}</p>
               </div>
               <div class="reply-actions">
-                <button pButton [icon]="isReplyLiked(reply) ? 'pi pi-heart-fill' : 'pi pi-heart'" 
+                <button pButton [icon]="isReplyLiked(reply) ? 'pi pi-heart-fill' : 'pi pi-heart'"
                         [class.p-button-danger]="isReplyLiked(reply)"
-                        (click)="likeReply(reply)" 
+                        (click)="likeReply(reply)"
                         class="p-button-text">
                   {{ reply.likesCount }}
                 </button>
                 <button *ngIf="auth.currentUser?.uid === reply.userId" pButton label="Edit" (click)="editReply(reply)" class="p-button-text"></button>
-                <button *ngIf="auth.currentUser?.uid === reply.userId" pButton label="Delete" (click)="deleteReply(reply.replyId)" class="p-button-text p-button-danger"></button>
+                <button *ngIf="auth.currentUser?.uid === reply.userId || auth.currentUser?.uid === post?.authorId || isUserAdminOrAuthor(auth.currentUser?.uid)"
+                        pButton label="Delete"
+                        (click)="deleteReply(reply.replyId)"
+                        class="p-button-text p-button-danger"></button>
               </div>
             </div>
           </div>
@@ -181,3 +192,5 @@
 </p-dialog>
 
 <p-toast></p-toast>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

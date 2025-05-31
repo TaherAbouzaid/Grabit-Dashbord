@@ -17,7 +17,7 @@
     <!-- Detailed Sales Analysis -->
     <div class="col-12 lg:col-6">
         <p-card header="Detailed Sales Analysis">
-            <p-chart type="line" [data]="salesData" [options]="chartOptions"></p-chart>
+            <p-chart type="line" [data]="salesData" [options]="lineChartOptions"></p-chart>
             <div class="mt-4">
                 <h4>Sales Summary</h4>
                 <div class="grid">
@@ -154,7 +154,7 @@
                                 <img [src]="product.mainImage" [alt]="product.title?.en"
                                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
                                 <div class="flex flex-column">
-                                    <span class="font-bold">{{product.title?.en}}</span>
+                                    <span class="font-bold">{{product.displayTitle || product.title?.en || 'No Title'}}</span>
                                     <small class="text-500">{{product.categoryId?.name?.en || 'No Category'}}</small>
                                 </div>
                             </div>

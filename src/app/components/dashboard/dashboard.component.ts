@@ -17,9 +17,9 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    CommonModule, 
-    ChartModule, 
-    CardModule, 
+    CommonModule,
+    ChartModule,
+    CardModule,
     MessageModule,
     TableModule,
     TagModule,
@@ -47,7 +47,7 @@ export class DashboardComponent implements OnInit {
     chartOptions: any;
     userRole: string = '';
     vendorId: string = '';
-  
+
     // New properties for detailed analytics
     dateRange: Date[] = [];
     totalSales: number = 0;
@@ -57,11 +57,11 @@ export class DashboardComponent implements OnInit {
     lowStockCount: number = 0;
     outOfStockCount: number = 0;
     inventoryValue: number = 0;
-  
+
     // Overview metrics
     totalProducts: number = 0;
     totalOrders: number = 0;
-  
+
     constructor(
       private productService: ProductService,
       private auth: Auth,
@@ -95,7 +95,7 @@ export class DashboardComponent implements OnInit {
         },
       };
     }
-  
+
     async ngOnInit() {
       console.log('Starting dashboard initialization...');
       await this.loadUserData();
@@ -105,10 +105,10 @@ export class DashboardComponent implements OnInit {
       await this.loadTrendingProducts();
       console.log('Trending products loaded:', this.trendingProducts);
       await this.loadDetailedAnalytics();
-      console.log('Detailed analytics loaded:', { 
-        totalSales: this.totalSales, 
+      console.log('Detailed analytics loaded:', {
+        totalSales: this.totalSales,
         averageOrderValue: this.averageOrderValue,
-        categoryDetails: this.categoryDetails 
+        categoryDetails: this.categoryDetails
       });
       await this.loadOverviewData();
       console.log('Overview data loaded:', {
@@ -118,12 +118,12 @@ export class DashboardComponent implements OnInit {
       });
       const ordersRef = collection(this.firestore, 'orders');
       let ordersQuery = query(ordersRef);
-      
+
       // Add vendor filter if not admin
       if (this.userRole !== 'admin') {
         ordersQuery = query(ordersRef, where('vendorId', '==', this.vendorId));
       }
-      
+
       collectionData(ordersQuery, { idField: 'id' }).subscribe((orders: any[]) => {
         this.totalSales = orders
           .filter(order =>
@@ -133,7 +133,7 @@ export class DashboardComponent implements OnInit {
           .reduce((sum, order) => sum + Number(order.finalTotal || 0), 0);
       });
     }
-  
+
     async loadUserData() {
       console.log('Loading user data...');
       const currentUser = this.auth.currentUser;
@@ -150,7 +150,7 @@ export class DashboardComponent implements OnInit {
         }
       }
     }
-  
+
     async loadAnalyticsData() {
       try {
         console.log('Loading analytics data...');
@@ -171,7 +171,7 @@ export class DashboardComponent implements OnInit {
             },
           ],
         };
-  
+
         // Load Category Data
         const categoryAnalytics = await this.productService.getCategoryAnalytics(
           this.userRole !== 'admin' ? this.vendorId : undefined
@@ -192,7 +192,7 @@ export class DashboardComponent implements OnInit {
             },
           ],
         };
-  
+
         // Load Top Products Data
         const topProducts = await this.productService.getTopProducts(
           this.userRole !== 'admin' ? this.vendorId : undefined
@@ -208,7 +208,7 @@ export class DashboardComponent implements OnInit {
             },
           ],
         };
-  
+
         // Load Inventory Status
         const inventoryStatus = await this.productService.getInventoryStatus(
           this.userRole !== 'admin' ? this.vendorId : undefined
@@ -227,7 +227,7 @@ export class DashboardComponent implements OnInit {
         console.error('Error loading analytics data:', error);
       }
     }
-  
+
     async loadTrendingProducts() {
       try {
         const products = await this.productService.getTrendingProducts(10);
@@ -247,7 +247,7 @@ export class DashboardComponent implements OnInit {
         this.trendingProducts = [];
       }
     }
-  
+
     async loadDetailedAnalytics() {
       try {
         // Load detailed sales data
@@ -259,7 +259,7 @@ export class DashboardComponent implements OnInit {
           0
         );
         this.averageOrderValue = this.totalSales / (salesData.data.length || 1);
-  
+
         // Load category details
         const categoryData = await this.productService.getCategoryAnalytics(
           this.userRole !== 'admin' ? this.vendorId : undefined
@@ -272,7 +272,7 @@ export class DashboardComponent implements OnInit {
             growth: Math.floor(Math.random() * 40) - 10, // Placeholder growth
           })
         );
-  
+
         // Load product details
         const products = await this.productService.getTrendingProducts(5);
         this.productDetails = products.map((product) => ({
@@ -281,7 +281,7 @@ export class DashboardComponent implements OnInit {
           unitsSold: product.soldCount || 0,
           profitMargin: Math.floor(Math.random() * 30) + 10, // Placeholder margin
         }));
-  
+
         // Load inventory details
         const inventoryStatus = await this.productService.getInventoryStatus(
           this.userRole !== 'admin' ? this.vendorId : undefined
@@ -293,25 +293,25 @@ export class DashboardComponent implements OnInit {
         console.error('Error loading detailed analytics:', error);
       }
     }
-  
+
     async loadOverviewData() {
       try {
         // Load basic metrics
         const products = await firstValueFrom(this.productService.getProducts(this.userRole, this.vendorId));
         this.totalProducts = products?.length || 0;
-  
+
         // Calculate total sales
         const salesData = await this.productService.getSalesAnalytics(
-          this.userRole !== 'admin' ? this.vendorId : undefined
+          this.userRole !== 'admin' && this.userRole !== 'shop manager' ? this.vendorId : undefined
         );
         this.totalSales = salesData.data.reduce((a: number, b: number) => a + b, 0);
-  
+
         // Calculate total orders - using actual orders data
         const ordersData = await this.productService.getOrdersAnalytics(
           this.userRole !== 'admin' ? this.vendorId : undefined
         );
         this.totalOrders = ordersData.data.reduce((a: number, b: number) => a + b, 0);
-  
+
         // Calculate low stock items
         const inventoryStatus = await this.productService.getInventoryStatus(
           this.userRole !== 'admin' ? this.vendorId : undefined
@@ -328,7 +328,7 @@ export class DashboardComponent implements OnInit {
         console.error('Error loading overview data:', error);
       }
     }
-  
+
     async applyDateFilter() {
       if (this.dateRange && this.dateRange.length === 2) {
         // Implement date filtering logic here
@@ -336,7 +336,7 @@ export class DashboardComponent implements OnInit {
         await this.loadDetailedAnalytics();
       }
     }
-  
+
     async exportData() {
       // Implement data export logic here
       console.log('Exporting data...');
