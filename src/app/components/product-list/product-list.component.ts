@@ -15,7 +15,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { FileUpload } from 'primeng/fileupload';
+// import { FileUpload } from 'primeng/fileupload';
 import { SelectModule } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 import { RadioButton } from 'primeng/radiobutton';
@@ -55,7 +55,6 @@ interface ExportColumn {
          InputTextModule,
          TextareaModule,
          CommonModule,
-         FileUpload,
          DropdownModule,
          Tag,
          RadioButton,
